@@ -1,0 +1,48 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/TemplateStyleSheet.uss?fileID=7433441132597879392&amp;guid=f5894c9d97a5b334fb951afee4f0740a&amp;type=3#TemplateStyleSheet" />
+    <ui:VisualElement name="mainMenu" class="canvas" style="align-items: center; justify-content: center; align-self: auto;">
+        <ui:Label text="9x9" name="titleLabel" class="label title" />
+        <ui:Button text="Single Player" display-tooltip-when-elided="true" name="singlePlayerButton" class="button" />
+        <ui:Button text="Multiplayer" display-tooltip-when-elided="true" name="multiplayerButton" class="button" />
+        <ui:Button text="Profile" display-tooltip-when-elided="true" name="profileButton" class="button" />
+        <ui:Button text="Options" display-tooltip-when-elided="true" name="optionsButton" class="button" />
+        <ui:Button text="Quit" display-tooltip-when-elided="true" name="quitButton" class="button" />
+    </ui:VisualElement>
+    
+    <!-- Single Player Submenu -->
+    <ui:VisualElement name="singlePlayerMenu" class="canvas" style="display: none; align-items: center; justify-content: center;">
+        <ui:Label text="Single Player" name="spTitleLabel" class="label sublabel" />
+        <ui:Button text="Continue" display-tooltip-when-elided="true" name="continueButton" class="button" />
+        <ui:Button text="New Game" display-tooltip-when-elided="true" name="newGameButton" class="button" />
+        <ui:Button text="Co-op" display-tooltip-when-elided="true" name="coopButton" class="button" />
+        <ui:Button text="Back" display-tooltip-when-elided="true" name="spBackButton" class="button" />
+    </ui:VisualElement>
+    
+    <!-- Multiplayer Submenu -->
+    <ui:VisualElement name="multiplayerMenu" class="canvas" style="display: none; align-items: center; justify-content: center;">
+        <ui:Label text="Multiplayer" name="mpTitleLabel" class="label sublabel" />
+        <ui:Button text="Battle Royale" display-tooltip-when-elided="true" name="battleRoyaleButton" class="button" />
+        <ui:Button text="3x3 Mode" display-tooltip-when-elided="true" name="mode3x3Button" class="button" />
+        <ui:Button text="5x5 Mode" display-tooltip-when-elided="true" name="mode5x5Button" class="button" />
+        <ui:Button text="Co-op" display-tooltip-when-elided="true" name="mpCoopButton" class="button" />
+        <ui:Button text="Back" display-tooltip-when-elided="true" name="mpBackButton" class="button" />
+    </ui:VisualElement>
+    
+    <!-- Profile View (Placeholder) -->
+    <ui:VisualElement name="profileMenu" class="canvas" style="display: none; align-items: center; justify-content: center;">
+        <ui:Label text="Player Profile" name="profileTitleLabel" class="label sublabel" />
+        <ui:Label text="Name: Player" name="playerNameLabel" class="label" style="font-size: 36px; margin-bottom: 20px;" />
+        <ui:Label text="Wins: 0" name="winsLabel" class="label" style="font-size: 28px;" />
+        <ui:Label text="Kills: 0" name="killsLabel" class="label" style="font-size: 28px;" />
+        <ui:Label text="Friends List" name="friendsLabel" class="label" style="font-size: 32px; margin-top: 30px; margin-bottom: 10px;" />
+        <ui:ScrollView name="friendsListScroll" style="height: 200px; width: 400px; background-color: rgba(0, 0, 0, 0.5);" />
+        <ui:Button text="Back" display-tooltip-when-elided="true" name="profileBackButton" class="button" style="margin-top: 20px;" />
+    </ui:VisualElement>
+    
+    <!-- Options Menu (Placeholder) -->
+    <ui:VisualElement name="optionsMenu" class="canvas" style="display: none; align-items: center; justify-content: center;">
+        <ui:Label text="Options" name="optionsTitleLabel" class="label sublabel" />
+        <ui:Label text="[Options coming soon]" class="label" style="font-size: 24px; margin-bottom: 40px;" />
+        <ui:Button text="Back" display-tooltip-when-elided="true" name="optionsBackButton" class="button" />
+    </ui:VisualElement>
+</ui:UXML>
