@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace Unity.Template.Multiplayer.NGO.Runtime
+namespace Unity.Template.Multiplayer.NGO.Core.Systems
 {
     /// <summary>
     /// Manages player profile data including stats, friends list, and save games

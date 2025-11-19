@@ -4,6 +4,7 @@
     "references": [
         "Unity.Netcode.Runtime",
         "com.unity.template.multiplayer-ngo.shared",
+        "Core",
         "ParrelSync",
         "Unity.Services.Core",
         "Unity.Services.Multiplayer",

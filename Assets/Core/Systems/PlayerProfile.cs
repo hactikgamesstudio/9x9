@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Unity.Template.Multiplayer.NGO.Runtime
+namespace Unity.Template.Multiplayer.NGO.Core.Systems
 {
     /// <summary>
     /// Player profile data structure containing stats and social information

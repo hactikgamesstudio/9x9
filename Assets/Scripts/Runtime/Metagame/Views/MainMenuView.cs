@@ -1,4 +1,6 @@
 using UnityEngine.UIElements;
+using Unity.Template.Multiplayer.NGO.Core.Systems;
+
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
     internal class MainMenuView : View<MetagameApplication>
