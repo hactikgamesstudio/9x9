@@ -1,0 +1,17 @@
+{
+    "name": "Game",
+    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
+    "references": [
+        "com.unity.template.multiplayer-ngo.runtime",
+        "Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

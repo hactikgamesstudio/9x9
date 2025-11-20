@@ -10,7 +10,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     public class CubeGameApplication
         : BaseApplication<CubeGameModel, CubeGameView, CubeGameController>
     {
-        internal static new CubeGameApplication Instance { get; private set; }
+        internal static CubeGameApplication Instance { get; private set; }
 
         internal bool IsDedicatedServer =>
             NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient;

@@ -33,11 +33,12 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             AddListener<PlayerReachedExitEvent>(OnPlayerReachedExit);
             AddListener<PlayerDiedEvent>(OnPlayerDied);
 
-            // Server-only logic for RoomGenerator initialization
-            bool isServer = NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
-            if (!isServer)
+            // Treat offline singleplayer as 'server' for logic that usually runs on server
+            bool isServerOrOffline = (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer) ||
+                                     (CustomNetworkManager.Singleton != null && !CustomNetworkManager.Singleton.IsClient && !CustomNetworkManager.Singleton.IsServer);
+            if (!isServerOrOffline)
             {
-                return; // Clients don't create or configure RoomGenerator
+                return; // network client path
             }
 
             // Auto-find RoomGenerator if not assigned
@@ -210,12 +211,32 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             var connectedClients = NetworkManager.Singleton.ConnectedClients.Values.ToList();
             int playerIndex = 0;
 
-            foreach (var client in connectedClients)
-            {
-                Vector3 spawnPosition = m_RoomGenerator.GetCornerSpawnPosition(playerIndex);
+                    // Step 2: Count connected players or assume 1 in offline mode
+                    if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+                    {
+                        Model.PlayersAlive.Value = NetworkManager.Singleton.ConnectedClients.Count;
+                    }
+                    else
+                    {
+                        Model.PlayersAlive.Value = 1; // offline singleplayer
+                    }
+                    Debug.Log($"[9x9 Server] {Model.PlayersAlive.Value} players active");
 
-                // Teleport player to spawn position
-                Player player = client.PlayerObject.GetComponent<Player>();
+                    // Step 3: Spawn players at corner positions (offline singleplayer moves local player)
+                    if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+                    {
+                        SpawnPlayersAtCorners();
+                    }
+                    else
+                    {
+                        // offline: move existing player avatar
+                        var localPlayer = Object.FindFirstObjectByType<Player>();
+                        if (localPlayer != null && m_RoomGenerator != null)
+                        {
+                            localPlayer.transform.position = m_RoomGenerator.GetCornerSpawnPosition(0);
+                            Debug.Log("[9x9 Offline] Local player positioned at corner spawn 0");
+                        }
+                    }
                 if (player != null)
                 {
                     player.transform.position = spawnPosition;

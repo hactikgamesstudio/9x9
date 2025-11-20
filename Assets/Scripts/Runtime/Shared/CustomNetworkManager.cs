@@ -74,9 +74,9 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         [RuntimeInitializeOnLoadMethod]
         static void OnApplicationStarted()
+        [RuntimeInitializeOnLoadMethod]
+        static void OnApplicationStarted()
         {
-            if (!Singleton) //this happens during PlayMode tests
-            {
                 return;
             }
             // Create configuration file automatically if it doesn't exist in the working directory
@@ -119,67 +119,67 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         public void InitializeNetworkLogic(bool startedByUser, bool startedByMatchmaker)
         {
             if (IsClient || IsServer)
+                    // Shutdown any existing network session cleanly
+                    if (IsClient || IsServer)
+                    {
+                        m_NetworkManager.Shutdown();
+                    }
+
+                    // Ensure NetworkConfig has no null or invalid NetworkPrefab entries before starting networking
+                    SanitizeNetworkPrefabs();
+
+                    ExpectedPlayers = Configuration.GetInt(ConfigurationManager.k_MaxPlayers);
+                    if (ExpectedPlayers < 1)
+        {
+            // Shutdown any existing network session cleanly
+            if (IsClient || IsServer)
             {
                 m_NetworkManager.Shutdown();
             }
 
             // Ensure NetworkConfig has no null or invalid NetworkPrefab entries before starting networking
             SanitizeNetworkPrefabs();
+                    // Offline singleplayer (no Netcode session started)
+                    if (startedByUser && !startedByMatchmaker)
+                    {
+                        InstantiateGameApplication();
+                        if (m_GameApp != null && m_GameApp.GetComponent<BotManager>() == null)
+                        {
+                            m_GameApp.gameObject.AddComponent<BotManager>();
+                            Debug.Log("[9x9] Offline singleplayer initialized (local game + bots).");
+                        }
+                        return;
+                    }
 
-            ExpectedPlayers = Configuration.GetInt(ConfigurationManager.k_MaxPlayers);
-            if (ExpectedPlayers < 1)
-            {
-                Debug.LogError(
-                    "Can't start a match with less than 1 player, please set MaxPlayers in the configuration or the Bootstrapper to at least 1."
-                );
-#if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-#else
-                Application.Quit();
-#endif
-                return;
-            }
+                    // Matchmaker flow (client only)
+                    if (startedByMatchmaker)
+                    {
+                        if (IsClient)
+                        {
+                            Debug.Log("Already connected!");
+                            return;
+                        }
+                        StartClientWithMatchmakerData();
+                        return;
+                    }
 
-            if (startedByMatchmaker) //then you can only run in client mode
-            {
-                if (IsClient)
-                {
-                    Debug.Log("Already connected!");
-                    return;
+                    var commandLineArgumentsParser = new CommandLineArgumentsParser();
+                    ushort listeningPort = commandLineArgumentsParser.ServerPort != -1
+                        ? (ushort)commandLineArgumentsParser.ServerPort
+                        : (ushort)Configuration.GetInt(ConfigurationManager.k_Port);
+
+                    // Host single-player networked (legacy path) – keep for compatibility
+                    if (startedByUser)
+                    {
+                        StartClientAsSinglePlayer(listeningPort);
+                        return;
+                    }
+
+                    if (AutoConnectOnStartup)
+                    {
+                        AutoConnect(listeningPort);
+                    }
                 }
-                StartClientWithMatchmakerData();
-                return;
-            }
-
-            var commandLineArgumentsParser = new CommandLineArgumentsParser();
-            ushort listeningPort =
-                commandLineArgumentsParser.ServerPort != -1
-                    ? (ushort)commandLineArgumentsParser.ServerPort
-                    : (ushort)Configuration.GetInt(ConfigurationManager.k_Port);
-            if (startedByUser) //single player mode!
-            {
-                StartClientAsSinglePlayer(listeningPort);
-                return;
-            }
-
-            if (AutoConnectOnStartup)
-            {
-                AutoConnect(listeningPort);
-            }
-        }
-
-        void StartClientAsSinglePlayer(ushort listeningPort)
-        {
-            // Force true single-player mode: 1 expected player, no bots
-            ExpectedPlayers = 1;
-            Configuration.Set(ConfigurationManager.k_EnableBots, false);
-            Debug.Log(
-                $"Starting Host (single player mode) on port {listeningPort}, expecting {ExpectedPlayers}"
-            );
-            SetNetworkPortAndAddress(
-                listeningPort,
-                k_DefaultServerListenAddress,
-                k_DefaultServerListenAddress
             );
             SanitizeNetworkPrefabs();
             m_NetworkManager.StartHost();
@@ -190,13 +190,9 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             Debug.Log(
                 $"Attempting to connect to: {s_AssignmentForCurrentGame.Ip}:{s_AssignmentForCurrentGame.Port}"
             );
-            SetNetworkPortAndAddress(
-                (ushort)s_AssignmentForCurrentGame.Port,
-                s_AssignmentForCurrentGame.Ip,
-                k_DefaultServerListenAddress
-            );
-            SanitizeNetworkPrefabs();
-            m_NetworkManager.StartClient();
+            {
+                AutoConnect(listeningPort);
+            }
         }
 
         void AutoConnect(ushort listeningPort)
