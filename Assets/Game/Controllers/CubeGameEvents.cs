@@ -3,27 +3,27 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     /// <summary>
     /// Event fired when a player reaches the exit room
     /// </summary>
-    internal class PlayerReachedExitEvent : AppEvent
+    public class PlayerReachedExitEvent
     {
-        public Player WinningPlayer { get; set; }
+        public ulong WinningPlayerId { get; set; }
 
-        public PlayerReachedExitEvent(Player player)
+        public PlayerReachedExitEvent(ulong playerId)
         {
-            WinningPlayer = player;
+            WinningPlayerId = playerId;
         }
     }
 
     /// <summary>
     /// Event fired when a player dies from hazards or combat
     /// </summary>
-    internal class PlayerDiedEvent : AppEvent
+    public class PlayerDiedEvent
     {
-        public Player DeadPlayer { get; set; }
+        public ulong DeadPlayerId { get; set; }
         public string CauseOfDeath { get; set; }
 
-        public PlayerDiedEvent(Player player, string cause = "Unknown")
+        public PlayerDiedEvent(ulong playerId, string cause = "Unknown")
         {
-            DeadPlayer = player;
+            DeadPlayerId = playerId;
             CauseOfDeath = cause;
         }
     }

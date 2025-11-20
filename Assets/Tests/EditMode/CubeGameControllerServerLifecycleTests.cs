@@ -1,6 +1,8 @@
 using NUnit.Framework;
 using UnityEngine;
 using Unity.Template.Multiplayer.NGO.Runtime;
+using Unity.Template.Multiplayer.NGO.Runtime.Game;
+using Unity.Template.Multiplayer.NGO.Runtime.Shared.Procedural;
 
 public class CubeGameControllerServerLifecycleTests
 {

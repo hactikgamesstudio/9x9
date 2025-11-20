@@ -414,9 +414,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             Debug.Log($"Client {ClientId} disconnected");
             if (IsServer)
             {
-                ReadyPlayers.RemoveWhere(
-                    p => p.NetworkObject == m_NetworkManager.ConnectedClients[ClientId].PlayerObject
-                );
+                ReadyPlayers.RemoveWhere(p => p.NetworkObject == m_NetworkManager.ConnectedClients[ClientId].PlayerObject);
                 if (m_GameApp != null) //the game already started
                 {
                     m_GameApp.Broadcast(new PlayerDisconnected(ClientId));
@@ -479,21 +477,12 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 return;
             }
 
-            // Fallback: dynamically construct CubeGameApplication when prefab is missing
-            Debug.LogWarning("[9x9] GameApp prefab missing. Constructing CubeGameApplication at runtime.");
-            var go = new GameObject("CubeGameApplication");
-            // Add required components for the Cube Maze game
-            var app = go.AddComponent<CubeGameApplication>();
-            go.AddComponent<CubeGameModel>();
-            go.AddComponent<CubeGameView>();
-            go.AddComponent<CubeGameController>();
-
-            // Ensure MazeDataSynchronizer exists (used by model for sync)
-            var syncGo = new GameObject("MazeDataSynchronizer");
-            syncGo.transform.SetParent(go.transform);
-            syncGo.AddComponent<MazeDataSynchronizer>();
-
-            m_GameApp = app;
+            // ERROR: GameApp prefab must be assigned in Inspector!
+            Debug.LogError(
+                "[NetworkManager] GameApp prefab is not assigned! "
+                + "Please assign CubeGameApplication prefab in CustomNetworkManager Inspector. "
+                + "Cannot proceed without game application."
+            );
         }
 
         internal BaseApplication CurrentGameApp => m_GameApp;
