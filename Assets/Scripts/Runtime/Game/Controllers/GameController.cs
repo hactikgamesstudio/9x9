@@ -2,6 +2,7 @@ using System.Collections;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using Unity.Template.Multiplayer.NGO.Core;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {

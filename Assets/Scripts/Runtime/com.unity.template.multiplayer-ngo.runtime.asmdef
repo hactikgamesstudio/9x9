@@ -5,6 +5,8 @@
         "Unity.Netcode.Runtime",
         "com.unity.template.multiplayer-ngo.shared",
         "Core",
+        "Game",
+        "Bots",
         "ParrelSync",
         "Unity.Services.Core",
         "Unity.Services.Multiplayer",

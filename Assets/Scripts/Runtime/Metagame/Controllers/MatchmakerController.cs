@@ -5,6 +5,7 @@ using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplayer;
 using UnityEngine;
 using static Unity.Services.Matchmaker.Models.MultiplayAssignment;
+using Unity.Template.Multiplayer.NGO.Core;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {

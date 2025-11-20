@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.UIElements;
+using Unity.Template.Multiplayer.NGO.Core;
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
     internal class MatchmakerView : View<MetagameApplication>

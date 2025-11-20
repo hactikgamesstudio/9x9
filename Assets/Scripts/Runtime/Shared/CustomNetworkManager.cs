@@ -171,8 +171,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     // Host single-player networked (legacy path) – keep for compatibility
                     if (startedByUser)
                     {
-                        StartClientAsSinglePlayer(listeningPort);
-                        return;
+                    throw new NotImplementedException();
+                    return;
                     }
 
                     if (AutoConnectOnStartup)
@@ -184,6 +184,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             SanitizeNetworkPrefabs();
             m_NetworkManager.StartHost();
         }
+
 
         void StartClientWithMatchmakerData()
         {
