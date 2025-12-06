@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edfdb668242729248a09b9091d7e4d23, type: 3}
+  m_Name: DefaultRoomGenConfig
+  m_EditorClassIdentifier: Core::Unity.Template.Multiplayer.NGO.Runtime.RoomGenConfig
+  RoomTemplates:
+  - {fileID: 7417380212535115691, guid: d3d02aa459c26d849b85617df3321f1d, type: 3}
+  - {fileID: 614785232352550152, guid: 398ed20047841fd4894aa09d8a47cc87, type: 3}
+  - {fileID: 614785232352550152, guid: 58c88c22c46957c468fa91c8cba86dae, type: 3}
+  - {fileID: 3489164982845098071, guid: 15d9fa28245018344b752ca7c300ee22, type: 3}
+  ExitRoomPrefab: {fileID: 7417380212535115691, guid: c3dcc20bca908a6488bc3e638d646dae, type: 3}
+  SpawnRoomPrefab: {fileID: 7417380212535115691, guid: 73452e775a0c31e42a4b192165c90354, type: 3}
+  GridSize: 9
+  RoomSize: 10
+  GenerateAllRooms: 0
+  SparseDensity: 0.3
+  FalseDoorChance: 0.15
+  EnableRoomRotation: 1
+  RotationCooldown: 10
+  Seed: 0

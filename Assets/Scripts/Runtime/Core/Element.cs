@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using Unity.Template.Multiplayer.NGO.Core;
 
-namespace Unity.Template.Multiplayer.NGO.Runtime
+namespace Unity.Template.Multiplayer.NGO.Core
 {
     /// <summary>
     /// Extension of the element class to handle different BaseApplication types.

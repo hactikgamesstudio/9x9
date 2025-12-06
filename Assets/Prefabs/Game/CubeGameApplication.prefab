@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2788674413277546247}
-  - component: {fileID: 2942475583160734874}
   m_Layer: 0
   m_Name: RoomGenerator
   m_TagString: Untagged
@@ -32,30 +31,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6900079568434934830}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2942475583160734874
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2541104797877928290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fdf3de0ec87b7424db78bad4c3702d70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.unity.template.multiplayer-ngo.runtime::Unity.Template.Multiplayer.NGO.Runtime.RoomGenerator
-  m_GridSize: 9
-  m_RoomSize: 10
-  m_RoomTemplates: []
-  m_ExitRoomPrefab: {fileID: 7417380212535115691, guid: c3dcc20bca908a6488bc3e638d646dae, type: 3}
-  m_SpawnRoomPrefab: {fileID: 7417380212535115691, guid: 73452e775a0c31e42a4b192165c90354, type: 3}
-  m_FalseDoorChance: 0.245
-  m_EnableRoomRotation: 1
-  m_RotationCooldown: 10
-  m_Seed: 0
-  m_GenerateOnStart: 0
-  m_GenerateAllRooms: 1
-  m_SparseDensity: 0.3
 --- !u!1 &8151717977737709010
 GameObject:
   m_ObjectHideFlags: 0
@@ -65,10 +40,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6900079568434934830}
-  - component: {fileID: 1234567890123456781}
-  - component: {fileID: 1234567890123456782}
-  - component: {fileID: 1234567890123456783}
-  - component: {fileID: 1234567890123456784}
+  - component: {fileID: 4452089524508365461}
+  - component: {fileID: 246578770996892251}
+  - component: {fileID: 1310380686532817756}
+  - component: {fileID: 2099825723329566392}
   m_Layer: 0
   m_Name: CubeGameApplication
   m_TagString: Untagged
@@ -92,7 +67,7 @@ Transform:
   - {fileID: 2788674413277546247}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1234567890123456781
+--- !u!114 &4452089524508365461
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,10 +76,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8151717977737709010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41a07eaf902bc9141aa1db7652b9c730, type: 3}
+  m_Script: {fileID: 11500000, guid: da6dfc95ed375fc4aa8ae9466de7336a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1234567890123456782
+  m_EditorClassIdentifier: com.unity.template.multiplayer-ngo.runtime::Unity.Template.Multiplayer.NGO.Runtime.CubeGameApplication
+--- !u!114 &246578770996892251
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -113,10 +88,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8151717977737709010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6e48f9f81ab9a74d943234055986ce0, type: 3}
+  m_Script: {fileID: 11500000, guid: 3b2348e67fa60b5498a7d36621acf847, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1234567890123456783
+  m_EditorClassIdentifier: com.unity.template.multiplayer-ngo.runtime::Unity.Template.Multiplayer.NGO.Runtime.CubeGameModel
+--- !u!114 &1310380686532817756
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,12 +100,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8151717977737709010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79278cff0365f7445a6a179963447082, type: 3}
+  m_Script: {fileID: 11500000, guid: f1ea2c118da594247bc6b87d7bf911d3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: com.unity.template.multiplayer-ngo.runtime::Unity.Template.Multiplayer.NGO.Runtime.CubeGameView
   m_HUD: {fileID: 0}
   m_MatchRecap: {fileID: 0}
---- !u!114 &1234567890123456784
+--- !u!114 &2099825723329566392
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -139,7 +114,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8151717977737709010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e6b683c172a3c94289bbd8186d84ab2, type: 3}
+  m_Script: {fileID: 11500000, guid: 1f984b396e9d30246bc2bab686753805, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: com.unity.template.multiplayer-ngo.runtime::Unity.Template.Multiplayer.NGO.Runtime.CubeGameController
   m_RoomGenerator: {fileID: 0}
+  m_DefaultRoomGenConfig: {fileID: 11400000, guid: 56df8d716c4775147a7c42acfedae3b2, type: 2}
+  m_StoryModeProfile: {fileID: 11400000, guid: 7e210c0f92c05ef4fac0c733fa8207aa, type: 2}
+  m_CoopModeProfile: {fileID: 11400000, guid: 0a18a1012b09e90418aebc97d1dd3fc3, type: 2}
+  m_BattleRoyaleProfile: {fileID: 11400000, guid: 53b07e1df1fa1494d8bb67bfc04778f0, type: 2}
+  m_5x5Profile: {fileID: 11400000, guid: 700413b3b49818f48a1b3c863e61faaa, type: 2}
+  m_3x3Profile: {fileID: 11400000, guid: b94eac1d59b9fde44ad7668571c69eab, type: 2}
+  m_OfflinePlayerPrefab: {fileID: 1206077664805335211, guid: 4fa5197a3cfa9b94ca1e7ed08c11c1f5, type: 3}

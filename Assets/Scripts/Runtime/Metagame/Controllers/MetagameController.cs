@@ -1,5 +1,5 @@
-using UnityEngine;
 using Unity.Template.Multiplayer.NGO.Core;
+using UnityEngine;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
@@ -24,15 +24,15 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             RemoveListener<PlayerSignedIn>(OnPlayerSignedIn);
             RemoveListener<MatchEnteredEvent>(OnMatchEntered);
         }
-        void OnPlayerSignedIn(PlayerSignedIn evt)
+        void OnPlayerSignedIn(Unity.Template.Multiplayer.NGO.Runtime.PlayerSignedIn evt)
         {
             if (evt.Success)
             {
-                Debug.Log($"Player signed in with id {evt.PlayerId}");
+                UnityEngine.Debug.Log($"Player signed in with id {evt.PlayerId}");
             }
             else
             {
-                Debug.Log("Player did not sign in");
+                UnityEngine.Debug.Log("Player did not sign in");
             }
         }
 

@@ -48,7 +48,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             View.Show();
             CustomNetworkManager.Singleton.OnEnteredMatchmaker();
-            UnityServicesInitializer.Instance.Matchmaker.FindMatch(evt.QueueName, OnMatchSearchCompleted, View.UpdateTimer);
+            UnityServicesInitializer.Instance.Matchmaker.FindMatch(evt.QueueName, OnMatchSearchCompleted, (time) => View.UpdateTimer((int)time));
         }
 
         void OnExitMatchmakerQueue(ExitMatchmakerQueueEvent evt)
@@ -64,7 +64,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             {
                 case SessionError.None:
                 case SessionError.Unknown:
-                    Debug.Log("Match found!");
+                    UnityEngine.Debug.Log("Match found!");
                     break;
                 case SessionError.MatchmakerAssignmentFailed:
                     error = $"Failed to get ticket status.";
@@ -73,7 +73,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     error = "Could not find enough players in a reasonable amount of time";
                     break;
                 case SessionError.MatchmakerCancelled:
-                    Debug.Log("Matchmaker was cancelled");
+                    UnityEngine.Debug.Log("Matchmaker was cancelled");
                     break;
                 default:
                     throw new InvalidOperationException($"Unmanaged session error: '{sessionError}'");
@@ -81,7 +81,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
             if (!string.IsNullOrEmpty(error))
             {
-                Debug.LogError(error);
+                UnityEngine.Debug.LogError(error);
                 Broadcast(new ExitMatchmakerQueueEvent());
             }
         }
@@ -111,7 +111,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         IEnumerator DisconnectIfOpponentDoesNotJoin()
         {
             yield return CoroutinesHelper.FiveSeconds; //a long-enough grace period
-            Debug.Log("No opponent joined even if server was instantiated: they probably quit the queue while the server was being initialized. Going back to matchmaking.");
+            UnityEngine.Debug.Log("No opponent joined even if server was instantiated: they probably quit the queue while the server was being initialized. Going back to matchmaking.");
             Broadcast(new ExitMatchLoadingEvent());
         }
 

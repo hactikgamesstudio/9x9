@@ -1,4 +1,4 @@
-﻿namespace Unity.Template.Multiplayer.NGO.Runtime
+namespace Unity.Template.Multiplayer.NGO.Core
 {
     /// <summary>
     /// Extension of the BaseApplication class to handle different types of Model View Controllers.

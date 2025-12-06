@@ -1,5 +1,4 @@
 using UnityEngine;
-using Unity.Template.Multiplayer.NGO.Core.Systems;
 using Unity.Template.Multiplayer.NGO.Core;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
@@ -67,28 +66,44 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         void OnStartSinglePlayerMode(StartSinglePlayerModeEvent evt)
         {
+            UnityEngine.Debug.Log($"[MainMenuController] OnStartSinglePlayerMode called with GameMode: {evt.GameMode}, BotCount: {evt.BotCount}");
             View.Hide();
+            
+            // Store bot count for game initialization
+            if (CustomNetworkManager.Singleton != null)
+            {
+                // Use reflection to set bot count if CustomNetworkManager supports it
+                var botCountField = CustomNetworkManager.Singleton.GetType().GetField("m_BotCount", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (botCountField != null)
+                {
+                    botCountField.SetValue(CustomNetworkManager.Singleton, evt.BotCount);
+                    UnityEngine.Debug.Log($"[MainMenu] Set bot count to {evt.BotCount}");
+                }
+            }
             
             // Handle different game modes
             switch (evt.GameMode)
             {
                 case GameMode.Continue:
                     // Load saved game
+                    UnityEngine.Debug.Log("[MainMenuController] Loading saved game...");
                     PlayerProfileManager.LoadGame();
                     break;
                     
                 case GameMode.Coop:
                     // Start co-op mode (host a game for friends to join)
-                    Debug.Log("Starting Co-op mode");
+                    UnityEngine.Debug.Log($"[MainMenuController] Starting Co-op mode with {evt.BotCount} bots");
                     break;
                     
                 case GameMode.NewGame:
                 default:
                     // Start fresh single player game
-                    Debug.Log("Starting new single player game");
+                    UnityEngine.Debug.Log($"[MainMenuController] Starting new single player game with {evt.BotCount} bots");
                     break;
             }
             
+            UnityEngine.Debug.Log("[MainMenuController] Initializing network logic for singleplayer");
             CustomNetworkManager.Singleton.InitializeNetworkLogic(true, false);
         }
     }

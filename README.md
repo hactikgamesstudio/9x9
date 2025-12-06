@@ -13,6 +13,7 @@
 **9x9** is a procedurally-generated maze-escape game where players navigate through a deadly 9×9×9 cube grid filled with hazards, puzzles, and scarce resources. Compete in **Battle Royale** mode, cooperate in **Co-op** mode, or test your skills in smaller **3x3** and **5x5** arenas.
 
 ### Core Pillars
+
 - 🧩 **Procedural Generation** - Every game features a unique 9×9×9 room layout
 - 🎯 **Survival Mechanics** - Scavenge items, manage inventory, avoid deadly traps
 - ⚔️ **PvP Combat** - Engage other players for resources and survival
@@ -24,6 +25,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Unity 6000.2.10f1** (LTS)
 - **Visual Studio Code** with C# Dev Kit (recommended)
 - **Git** (for version control)
@@ -65,22 +67,26 @@ The first time you run the game:
 Comprehensive guides are available in the `Documentation/` folder:
 
 ### Setup & Configuration
+
 - [**Quick Start Guide**](Documentation/Setup/QUICK_START.md) - Fast setup for experienced Unity developers
 - [**Full Setup Guide**](Documentation/Setup/FULL_SETUP_GUIDE.md) - Complete walkthrough with troubleshooting
 - [**Cube Game Setup**](Documentation/Setup/CUBE_GAME_SETUP.md) - How to configure CubeGameApplication
 - [**Troubleshooting**](Documentation/Setup/TROUBLESHOOTING.md) - Common errors and solutions
 
 ### Development
+
 - [**Build Plan**](Documentation/Development/BUILD_PLAN.md) - Build checklist and deployment guide
 - [**Code Quality Report**](Documentation/Development/CODE_QUALITY_REPORT.md) - Build status and metrics
 - [**API Reference**](Documentation/Development/API_REFERENCE.md) - CubeGame API documentation *(coming soon)*
 
 ### Game Design
+
 - [**Game Overview**](Documentation/GameDesign/GAME_OVERVIEW.md) - Vision, mechanics, target audience
 - [**Art Direction**](Documentation/GameDesign/ART_DIRECTION.md) - Visual style and UI design
 - [**Mechanics**](Documentation/GameDesign/MECHANICS.md) - Gameplay systems and rules
 
 ### Reference Materials
+
 - [**Original Demo Reference**](Documentation/References/README.md) - Unity template demo vs. 9x9 comparison
 - [**Redundant Files Explained**](Documentation/REDUNDANT_FILES_EXPLAINED.md) - What was cleaned up and why
 
@@ -89,6 +95,7 @@ Comprehensive guides are available in the `Documentation/` folder:
 ## 🎯 Game Modes
 
 ### 🏆 Battle Royale
+
 - **Players**: 8 corners spawn (up to 8 players)
 - **Objective**: Be the first to reach the center exit room
 - **Time Limit**: 10 minutes
@@ -96,6 +103,7 @@ Comprehensive guides are available in the `Documentation/` folder:
 - **Winner**: First player to exit OR last player alive
 
 ### 🤝 Co-op
+
 - **Players**: 2-8 players
 - **Objective**: All players must reach the exit together
 - **Time Limit**: None
@@ -103,6 +111,7 @@ Comprehensive guides are available in the `Documentation/` folder:
 - **Winner**: Team victory when all players escape
 
 ### ⚡ 3x3 Mode
+
 - **Grid Size**: 3×3×3 = 27 rooms
 - **Players**: 2-4
 - **Objective**: Fast-paced exit race
@@ -110,6 +119,7 @@ Comprehensive guides are available in the `Documentation/` folder:
 - **Winner**: First to exit
 
 ### 🎲 5x5 Mode
+
 - **Grid Size**: 5×5×5 = 125 rooms
 - **Players**: 2-6
 - **Objective**: Medium-difficulty maze
@@ -117,6 +127,7 @@ Comprehensive guides are available in the `Documentation/` folder:
 - **Winner**: First to exit
 
 ### 🔧 Standard Mode
+
 - **Grid Size**: Full 9×9×9
 - **Players**: 1-8
 - **Objective**: Practice and exploration
@@ -161,20 +172,24 @@ Comprehensive guides are available in the `Documentation/` folder:
 ## 🛠️ Technology Stack
 
 ### Core
+
 - **Unity 6000.2.10f1** - Game engine (LTS release)
 - **C# / .NET Standard 2.1** - Programming language
 - **Universal Render Pipeline (URP)** - Graphics pipeline
 
 ### Networking
+
 - **Netcode for GameObjects 2.3.2** - Unity's official multiplayer framework
 - **Unity Transport 2.4.0** - Low-level networking layer
 - **Unity Gaming Services** - Matchmaking, relay, authentication
 
 ### UI
+
 - **UI Toolkit** - Modern declarative UI (UXML/USS)
 - **TextMeshPro** - Advanced text rendering
 
 ### Input
+
 - **Unity Input System 1.14.2** - New input system with gamepad support
 
 ---
@@ -246,6 +261,36 @@ dotnet build 9x9.slnx -c Release
 - **Fix**: Open RoomGenerator in Inspector → Assign room prefabs to "Room Templates" array
 
 See [**Troubleshooting Guide**](Documentation/Setup/TROUBLESHOOTING.md) for complete list.
+
+---
+
+## 🛠 Developer Utilities
+
+### Unity Batch Recompile Script
+
+To force a clean script recompile (useful after large refactors or resolving circular dependencies) use the PowerShell helper:
+
+Script location: `Tools/UnityBatchRecompile.ps1`
+
+1. Set the Unity editor path (if Unity Hub default paths are not detected):
+   ```powershell
+   setx UNITY_EDITOR_PATH "C:\Program Files\Unity\Hub\Editor\6000.2.10f1\Editor\Unity.exe"
+   # Restart the shell (or run: $Env:UNITY_EDITOR_PATH = "C:\Program Files\Unity\Hub\Editor\6000.2.10f1\Editor\Unity.exe")
+   ```
+2. Invoke the batch recompile:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File Tools/UnityBatchRecompile.ps1
+   ```
+3. Inspect first lines of `unity_recompile.log` printed automatically for errors.
+
+Exit code `0` indicates success. Non-zero means Unity encountered an internal build/compile issue—open the full log for details.
+
+Environment override:
+```powershell
+powershell -File Tools/UnityBatchRecompile.ps1 -ProjectPath C:\Path\To\9x9 -LogFile custom_log.txt
+```
+
+If no editor is found the script will instruct you to set `UNITY_EDITOR_PATH`.
 
 ---
 

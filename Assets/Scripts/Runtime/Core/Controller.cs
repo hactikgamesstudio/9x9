@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Unity.Template.Multiplayer.NGO.Runtime
+namespace Unity.Template.Multiplayer.NGO.Core
 {
     /// <summary>
     /// Base class for all Controllers in the application.
@@ -23,12 +23,12 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         /// Subscribes to an AppEvent
         /// </summary>
         /// <param name="evt">Callback for an AppEvent</param>
-        internal void AddListener<E>(Action<E> evt) where E : AppEvent
+        protected void AddListener<E>(Action<E> evt) where E : AppEvent
         {
             App.EventManager.AddListener(evt);
         }
 
-        internal void RemoveListener<E>(Action<E> evt) where E : AppEvent
+        protected void RemoveListener<E>(Action<E> evt) where E : AppEvent
         {
             App.EventManager.RemoveListener(evt);
         }

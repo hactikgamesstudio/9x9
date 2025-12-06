@@ -1,4 +1,4 @@
-﻿namespace Unity.Template.Multiplayer.NGO.Runtime
+﻿namespace Unity.Template.Multiplayer.NGO.Core
 {
     /// <summary>
     /// Base class for all View related classes.

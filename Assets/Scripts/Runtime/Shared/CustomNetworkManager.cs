@@ -8,6 +8,8 @@ using Unity.Services.Core;
 using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplayer;
 using UnityEngine;
+using UnityEngine.EventSystems; // For duplicate EventSystem pruning
+using Unity.Template.Multiplayer.NGO.Core;
 #if UNITY_SERVER || ENABLE_UCS_SERVER
 using Unity.Services.Authentication.Server;
 #endif
@@ -25,7 +27,11 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         public static CustomNetworkManager Singleton { get; private set; }
         public static ConfigurationManager Configuration { get; private set; }
         internal static MultiplayAssignment s_AssignmentForCurrentGame;
-        public bool UsingBots => Configuration.GetBool(ConfigurationManager.k_EnableBots);
+        // Null-safe bot flag (Configuration may be created AfterSceneLoad)
+        public bool UsingBots => Configuration != null && Configuration.GetBool(ConfigurationManager.k_EnableBots);
+        public bool HasConfiguration => Configuration != null;
+        public bool GetBoolSafe(string key, bool defaultValue = false) => Configuration != null ? Configuration.GetBool(key) : defaultValue;
+        public int GetIntSafe(string key, int defaultValue = 0) => Configuration != null ? Configuration.GetInt(key) : defaultValue;
 #if UNITY_EDITOR
         public static bool s_AreTestsRunning = false;
 #endif
@@ -33,7 +39,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             get
             {
-                bool startAutomatically = Configuration.GetBool(ConfigurationManager.k_Autoconnect);
+                bool startAutomatically = Configuration != null && Configuration.GetBool(ConfigurationManager.k_Autoconnect);
 #if UNITY_EDITOR
                 startAutomatically |= s_AreTestsRunning;
 #endif
@@ -51,7 +57,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         bool m_PreparedGame = true;
 
         [SerializeField]
-        BaseApplication m_GameAppPrefab;
+        [Tooltip("The game application prefab to instantiate when starting a match (e.g., CubeGameApplication)")]
+        GameObject m_GameAppPrefab;
         BaseApplication m_GameApp;
 
         [SerializeField]
@@ -66,25 +73,41 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             {
                 Singleton = this;
             }
+            // Configuration intentionally deferred to AfterSceneLoad; Awake only wires events.
             m_NetworkManager = GetComponent<NetworkManager>();
             m_NetworkManager.OnClientConnectedCallback += OnClientConnected;
             m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
             m_NetworkManager.OnServerStarted += OnServerStarted;
         }
 
-        [RuntimeInitializeOnLoadMethod]
-        static void OnApplicationStarted()
-        [RuntimeInitializeOnLoadMethod]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void OnApplicationStarted()
         {
+            // Attempt to bind Singleton if not yet assigned (first scene load)
+            if (Singleton == null)
+            {
+                var existing = UnityEngine.Object.FindFirstObjectByType<CustomNetworkManager>();
+                if (existing != null)
+                {
+                    Singleton = existing;
+                }
+            }
+
+            // If still no instance, defer entirely to a later Awake() (no warning spam)
+            if (Singleton == null)
+            {
                 return;
             }
-            // Create configuration file automatically if it doesn't exist in the working directory
-            Configuration = new ConfigurationManager(
-                Singleton,
-                ConfigurationManager.k_DevConfigFile,
-                OnConfigurationLoadedCallback
-            );
+
+            // Create configuration only if not already created by Awake fallback
+            if (Configuration == null)
+            {
+                Configuration = new ConfigurationManager(
+                    Singleton,
+                    ConfigurationManager.k_DevConfigFile,
+                    OnConfigurationLoadedCallback
+                );
+            }
         }
 
         static void OnConfigurationLoadedCallback(ConfigurationManager configurationManager)
@@ -97,7 +120,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
             /* note: this is the entry point for all autoconnected instances (including standalone servers)
             note 2: waiting a frame seems to be necessary to avoid race conditions related to serialization and network setup when using bots in Host autoconnect mode*/
-            Singleton.StartCoroutine(
+            _ = Singleton.StartCoroutine(
                 CoroutinesHelper.WaitAndDo(
                     CoroutinesHelper.WaitAFrame(),
                     () => Singleton.InitializeNetworkLogic(false, false)
@@ -118,19 +141,6 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         /// <param name="startedByMatchmaker">Was the setup automatically started by the matchmaker?</param>
         public void InitializeNetworkLogic(bool startedByUser, bool startedByMatchmaker)
         {
-            if (IsClient || IsServer)
-                    // Shutdown any existing network session cleanly
-                    if (IsClient || IsServer)
-                    {
-                        m_NetworkManager.Shutdown();
-                    }
-
-                    // Ensure NetworkConfig has no null or invalid NetworkPrefab entries before starting networking
-                    SanitizeNetworkPrefabs();
-
-                    ExpectedPlayers = Configuration.GetInt(ConfigurationManager.k_MaxPlayers);
-                    if (ExpectedPlayers < 1)
-        {
             // Shutdown any existing network session cleanly
             if (IsClient || IsServer)
             {
@@ -139,61 +149,68 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
             // Ensure NetworkConfig has no null or invalid NetworkPrefab entries before starting networking
             SanitizeNetworkPrefabs();
-                    // Offline singleplayer (no Netcode session started)
-                    if (startedByUser && !startedByMatchmaker)
-                    {
-                        InstantiateGameApplication();
-                        if (m_GameApp != null && m_GameApp.GetComponent<BotManager>() == null)
-                        {
-                            m_GameApp.gameObject.AddComponent<BotManager>();
-                            Debug.Log("[9x9] Offline singleplayer initialized (local game + bots).");
-                        }
-                        return;
-                    }
 
-                    // Matchmaker flow (client only)
-                    if (startedByMatchmaker)
-                    {
-                        if (IsClient)
-                        {
-                            Debug.Log("Already connected!");
-                            return;
-                        }
-                        StartClientWithMatchmakerData();
-                        return;
-                    }
+            ExpectedPlayers = Configuration.GetInt(ConfigurationManager.k_MaxPlayers);
+            if (ExpectedPlayers < 1)
+            {
+                ExpectedPlayers = 2; // Default to 2 players minimum
+            }
 
-                    var commandLineArgumentsParser = new CommandLineArgumentsParser();
-                    ushort listeningPort = commandLineArgumentsParser.ServerPort != -1
-                        ? (ushort)commandLineArgumentsParser.ServerPort
-                        : (ushort)Configuration.GetInt(ConfigurationManager.k_Port);
-
-                    // Host single-player networked (legacy path) – keep for compatibility
-                    if (startedByUser)
-                    {
-                    throw new NotImplementedException();
-                    return;
-                    }
-
-                    if (AutoConnectOnStartup)
-                    {
-                        AutoConnect(listeningPort);
-                    }
+            // Offline singleplayer (no Netcode session started)
+            if (startedByUser && !startedByMatchmaker)
+            {
+                InstantiateGameApplication();
+                // BotManager will be added by the game application if needed
+                UnityEngine.Debug.Log("[9x9] Offline singleplayer initialized (local game + bots).");
+                
+                // Broadcast StartMatchEvent to trigger game initialization (maze generation, player spawn)
+                // In offline mode, this replaces the network OnServerGameReadyToStart() call
+                if (m_GameApp != null)
+                {
+                    m_GameApp.Broadcast(new StartMatchEvent(true, false));
+                    UnityEngine.Debug.Log("[9x9] Broadcast StartMatchEvent for offline game initialization.");
                 }
-            );
-            SanitizeNetworkPrefabs();
-            m_NetworkManager.StartHost();
+                
+                return;
+            }
+
+            // Matchmaker flow (client only)
+            if (startedByMatchmaker)
+            {
+                if (IsClient)
+                {
+                    UnityEngine.Debug.Log("Already connected!");
+                    return;
+                }
+                StartClientWithMatchmakerData();
+                return;
+            }
+
+            var commandLineArgumentsParser = new CommandLineArgumentsParser();
+            ushort listeningPort = commandLineArgumentsParser.ServerPort != -1
+                ? (ushort)commandLineArgumentsParser.ServerPort
+                : (ushort)Configuration.GetInt(ConfigurationManager.k_Port);
+
+            // Auto-connect for dedicated servers or development builds
+            if (AutoConnectOnStartup)
+            {
+                AutoConnect(listeningPort);
+            }
         }
 
 
         void StartClientWithMatchmakerData()
         {
-            Debug.Log(
+            UnityEngine.Debug.Log(
                 $"Attempting to connect to: {s_AssignmentForCurrentGame.Ip}:{s_AssignmentForCurrentGame.Port}"
             );
-            {
-                AutoConnect(listeningPort);
-            }
+            ushort listeningPort = (ushort)s_AssignmentForCurrentGame.Port;
+            SetNetworkPortAndAddress(
+                listeningPort,
+                s_AssignmentForCurrentGame.Ip,
+                k_DefaultServerListenAddress
+            );
+            _ = m_NetworkManager.StartClient();
         }
 
         void AutoConnect(ushort listeningPort)
@@ -204,7 +221,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 case MultiplayerRoleFlags.Client:
                     if (IsClient)
                     {
-                        Debug.Log("Already connected!");
+                        UnityEngine.Debug.Log("Already connected!");
                         return;
                     }
                     SetNetworkPortAndAddress(
@@ -212,17 +229,17 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                         Configuration.GetString(ConfigurationManager.k_ServerIP),
                         k_DefaultServerListenAddress
                     );
-                    m_NetworkManager.StartClient();
+                    _ = m_NetworkManager.StartClient();
                     break;
                 case MultiplayerRoleFlags.Server:
-                    Debug.Log(
+                    UnityEngine.Debug.Log(
                         $"Starting server on port {listeningPort}, expecting {ExpectedPlayers} players"
                     );
                     Application.targetFrameRate = 60; //lock framerate on dedicated servers
                     OnServerMarkServerAsReadyToAcceptPlayers(listeningPort);
                     break;
                 case MultiplayerRoleFlags.ClientAndServer:
-                    Debug.Log(
+                    UnityEngine.Debug.Log(
                         $"Starting Host on port {listeningPort}, expecting {ExpectedPlayers} players"
                     );
                     SetNetworkPortAndAddress(
@@ -231,7 +248,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                         k_DefaultServerListenAddress
                     );
                     SanitizeNetworkPrefabs();
-                    m_NetworkManager.StartHost();
+                    _ = m_NetworkManager.StartHost();
                     break;
                 default:
                     break;
@@ -268,17 +285,17 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     }
                     else
                     {
-                        seen.Add(entry.Prefab);
+                        _ = seen.Add(entry.Prefab);
                     }
                 }
                 if (invalid > 0)
                 {
-                    Debug.LogWarning($"[Netcode] Detected {invalid} invalid NetworkPrefab entries. Use Tools/Netcode/Validate && Fix to clean them.", this);
+                    UnityEngine.Debug.LogWarning($"[Netcode] Detected {invalid} invalid NetworkPrefab entries. Use Tools/Netcode/Validate && Fix to clean them.", this);
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[Netcode] SanitizeNetworkPrefabs encountered an issue: {ex.Message}", this);
+                UnityEngine.Debug.LogWarning($"[Netcode] SanitizeNetworkPrefabs encountered an issue: {ex.Message}", this);
             }
         }
 
@@ -294,7 +311,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 k_DefaultServerListenAddress
             );
             m_NetworkManager.StartServer();
-            Debug.Log("[Server] Server is ready to accept players");
+            UnityEngine.Debug.Log("[Server] Server is ready to accept players");
 #endif
         }
 
@@ -336,7 +353,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 {
                     var session = m_SessionManager.Session;
                     await m_SessionManager.SetPlayerReadinessAsync(true);
-                    Debug.Log("[Multiplay] Server is ready to accept players");
+                    UnityEngine.Debug.Log("[Multiplay] Server is ready to accept players");
                 }
             }
         }
@@ -379,7 +396,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 (m_NetworkManager.ConnectedClients.Count + BotsSpawned) < totalPlayersCountToReach
             )
             {
-                InstantiateBotGamePlayer();
+                _ = InstantiateBotGamePlayer();
             }
         }
 
@@ -393,8 +410,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         internal void OnServerQuitAfter(float seconds)
         {
-            Debug.Log($"[Server] quitting game in {seconds} seconds!");
-            StartCoroutine(CoroutinesHelper.WaitAndDo(new WaitForSeconds(seconds), OnServerQuit));
+            UnityEngine.Debug.Log($"[Server] quitting game in {seconds} seconds!");
+            _ = StartCoroutine(CoroutinesHelper.WaitAndDo(new WaitForSeconds(seconds), OnServerQuit));
         }
 
         void OnServerQuit()
@@ -408,10 +425,10 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         void OnClientDisconnected(ulong ClientId)
         {
-            Debug.Log($"Client {ClientId} disconnected");
+            UnityEngine.Debug.Log($"Client {ClientId} disconnected");
             if (IsServer)
             {
-                ReadyPlayers.RemoveWhere(p => p.NetworkObject == m_NetworkManager.ConnectedClients[ClientId].PlayerObject);
+                _ = ReadyPlayers.RemoveWhere(p => p.NetworkObject == m_NetworkManager.ConnectedClients[ClientId].PlayerObject);
                 if (m_GameApp != null) //the game already started
                 {
                     m_GameApp.Broadcast(new PlayerDisconnected(ClientId));
@@ -423,7 +440,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             if (IsClient)
             {
-                Debug.Log($"Local client {ClientId} connected, waiting for other players...");
+                UnityEngine.Debug.Log($"Local client {ClientId} connected, waiting for other players...");
                 if (MetagameApplication.Instance)
                 {
                     MetagameApplication.Instance.Broadcast(new MatchLoadingEvent());
@@ -431,7 +448,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
             else
             {
-                Debug.Log($"Remote client {ClientId} connected");
+                UnityEngine.Debug.Log($"Remote client {ClientId} connected");
             }
 
             if (m_PreparedGame || !IsServer) //game should be prepared only once per server session
@@ -446,7 +463,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         internal void OnServerPlayerIsReady(Player player)
         {
-            ReadyPlayers.Add(player);
+            _ = ReadyPlayers.Add(player);
             if (ReadyPlayers.Count + BotsSpawned == ExpectedPlayers)
             {
                 OnServerGameReadyToStart();
@@ -455,7 +472,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         void OnServerPrepareGame()
         {
-            Debug.Log("[Server] Preparing game");
+            UnityEngine.Debug.Log("[Server] Preparing game");
             m_PreparedGame = true;
             InstantiateGameApplication();
             foreach (var connectionToClient in m_NetworkManager.ConnectedClients.Values)
@@ -470,16 +487,44 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             if (m_GameAppPrefab != null)
             {
-                m_GameApp = Instantiate(m_GameAppPrefab);
+                m_GameApp = Instantiate(m_GameAppPrefab).GetComponent<BaseApplication>();
+                PruneDuplicateEventSystems();
                 return;
             }
 
             // ERROR: GameApp prefab must be assigned in Inspector!
-            Debug.LogError(
+            UnityEngine.Debug.LogError(
                 "[NetworkManager] GameApp prefab is not assigned! "
                 + "Please assign CubeGameApplication prefab in CustomNetworkManager Inspector. "
                 + "Cannot proceed without game application."
             );
+        }
+
+        /// <summary>
+        /// Ensures only one active EventSystem exists (Unity UI requirement).
+        /// Keeps the first found and destroys subsequent ones, preferring to retain the pre-existing Metagame EventSystem.
+        /// </summary>
+        void PruneDuplicateEventSystems()
+        {
+            var systems = GameObject.FindObjectsByType<EventSystem>(FindObjectsSortMode.None);
+            if (systems == null || systems.Length <= 1)
+            {
+                return; // Nothing to prune
+            }
+
+            // Decide which to keep: keep the one that was in the scene before (not parented under newly instantiated game app)
+            // If we cannot distinguish, keep the first and remove others.
+            var toKeep = systems[0];
+            foreach (var es in systems)
+            {
+                if (es == toKeep)
+                {
+                    continue;
+                }
+                // Destroy duplicate EventSystem roots to avoid runtime warning and potential input blackout
+                UnityEngine.Debug.LogWarning("[UI] Destroying duplicate EventSystem: " + es.gameObject.name);
+                Destroy(es.gameObject);
+            }
         }
 
         internal BaseApplication CurrentGameApp => m_GameApp;

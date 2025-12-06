@@ -36,7 +36,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             {
                 /* If connectionData too high, deny immediately to avoid wasting time on the server. This is intended as
                 a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage. */
-                Debug.Log($"DOS attack detected by client with ID: {request.ClientNetworkId}");
+                UnityEngine.Debug.Log($"DOS attack detected by client with ID: {request.ClientNetworkId}");
                 response.Approved = false;
                 response.Reason = "DOS attack detected";
                 return;
@@ -44,7 +44,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
             if ((m_NetworkManager.ConnectedClients.Count + CustomNetworkManager.Singleton.BotsSpawned) >= CustomNetworkManager.Singleton.ExpectedPlayers)
             {
-                Debug.Log("Rejecting player since server is full");
+                UnityEngine.Debug.Log("Rejecting player since server is full");
                 response.Approved = false;
                 response.Reason = "Server is full";
                 return;
@@ -58,7 +58,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             if (!m_NetworkManager.IsServer && m_NetworkManager.DisconnectReason != string.Empty)
             {
-                Debug.Log($"Server declined connection because: {m_NetworkManager.DisconnectReason}");
+                UnityEngine.Debug.Log($"Server declined connection because: {m_NetworkManager.DisconnectReason}");
             }
         }
     }
