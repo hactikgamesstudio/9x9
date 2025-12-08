@@ -33,6 +33,34 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             return null;
         }
 
+        /// <summary>
+        /// Disable menu options that are not supported when auto-connect is enabled (dedicated server flow).
+        /// Mirrors the old UI Toolkit behavior by making the SinglePlayer and Multiplayer buttons non-interactable.
+        /// </summary>
+        internal void DisableControlsUnsupportedInAutoconnectMode()
+        {
+            if (CustomNetworkManager.Singleton == null || !CustomNetworkManager.Singleton.AutoConnectOnStartup)
+            {
+                return;
+            }
+
+            if (menuManager == null || menuManager.MainMenuPanel == null)
+            {
+                return;
+            }
+
+            var buttons = menuManager.MainMenuPanel.GetComponentsInChildren<Button>(true);
+            foreach (var button in buttons)
+            {
+                if (button == null) continue;
+
+                if (button.name == "MultiplayerButton" || button.name == "SinglePlayerButton")
+                {
+                    button.interactable = false;
+                }
+            }
+        }
+
         void OnEnable()
         {
             if (menuManager != null)
