@@ -51,7 +51,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             // Re-enable multiplayer button after exiting matchmaker
             if (View.MultiplayerButton != null)
             {
-                View.MultiplayerButton.SetEnabled(false);
+                View.MultiplayerButton.interactable = false;
             }
         }
 
@@ -60,7 +60,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             // Re-enable multiplayer button after fully exiting matchmaker queue
             if (View.MultiplayerButton != null)
             {
-                View.MultiplayerButton.SetEnabled(true);
+                View.MultiplayerButton.interactable = true;
             }
         }
 

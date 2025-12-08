@@ -88,17 +88,16 @@ public class NewGamePanel : UIMenuPanel
     private void OnStartGameClicked()
     {
         Debug.Log($"Starting game with {selectedBotCount} bots on {selectedDifficulty} difficulty");
-        
-        // Broadcast the start single player event
-        var startEvent = new StartSinglePlayerModeEvent 
-        { 
+
+        // Broadcast the start single player event via the metagame application
+        var startEvent = new StartSinglePlayerModeEvent
+        {
             GameMode = GameMode.NewGame,
             BotCount = selectedBotCount
         };
-        
-        // Use the event system to broadcast
-        Unity.Template.Multiplayer.NGO.Core.AppEvent.Broadcast(startEvent);
-        
+
+        MetagameApplication.Instance.Broadcast(startEvent);
+
         Debug.Log($"Broadcasted StartSinglePlayerModeEvent with BotCount: {selectedBotCount}");
     }
 
