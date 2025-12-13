@@ -1,0 +1,19 @@
+{
+    "name": "Unity.Template.Multiplayer.NGO.Runtime.Game",
+    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
+    "references": [
+        "Unity.Template.Multiplayer.NGO.Runtime.Core",
+        "Unity.Netcode.GameObjects",
+        "Unity.InputSystem",
+        "Unity.Collections"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Unity.Template.Multiplayer.NGO.Runtime.Metagame",
+    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
+    "references": [
+        "Unity.Template.Multiplayer.NGO.Runtime.Core",
+        "Unity.Template.Multiplayer.NGO.Runtime.UI",
+        "Unity.Netcode.GameObjects",
+        "Unity.Services.Authentication",
+        "Unity.Services.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
