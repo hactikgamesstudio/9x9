@@ -242,7 +242,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2735529898046788519}
-  - component: {fileID: 4216581305797874140}
   - component: {fileID: 7181582686434638750}
   - component: {fileID: 2770216793196261990}
   m_Layer: 5
@@ -279,17 +278,6 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: 17248bf6192ffad43b8ab0d7fa77c2f9, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: 4c4a65d85867be3439cd93bf1ef389eb, type: 3}
-  m_SortingOrder: 0
-  m_Position: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
-  m_PivotReferenceSize: 0
-  m_Pivot: 0
-  m_WorldSpaceCollider: {fileID: 0}
 --- !u!114 &7181582686434638750
 MonoBehaviour:
   m_ObjectHideFlags: 0
