@@ -1,15 +1,12 @@
 {
-    "name": "Unity.Template.Multiplayer.NGO.Runtime.UI",
-    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime.UI",
+    "name": "Unity.Template.Multiplayer.NGO.Runtime.Metagame",
+    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
     "references": [
         "Unity.Template.Multiplayer.NGO.Runtime.Core",
-        "Unity.Template.Multiplayer.NGO.Runtime.Game",
+        "Unity.Template.Multiplayer.NGO.Runtime.UI",
         "Unity.Netcode.GameObjects",
-        "Unity.Services.Matchmaker",
-        "Unity.Services.Multiplayer",
-        "Unity.InputSystem",
-        "TextMeshPro",
-        "UnityEngine.UI"
+        "Unity.Services.Authentication",
+        "Unity.Services.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
