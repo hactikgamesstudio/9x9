@@ -38,6 +38,9 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         
         void Start()
         {
+            // Disable lock notifications completely
+            m_ShowLockNotification = false;
+            
             // Set cursor to always visible on menu (unlocked for menu navigation)
             UnityEngine.Cursor.visible = true;
             UnityEngine.Cursor.lockState = CursorLockMode.None;
@@ -60,94 +63,21 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             
             // Cache UIDocument reference to avoid repeated FindFirstObjectByType calls
             InitializeUIDocument();
-            CreateLockNotificationUI();
         }
 
         void Update()
         {
-            // Monitor cursor lock state and show notification if changed
-            if (m_ShowLockNotification)
-            {
-                if (UnityEngine.Cursor.lockState != m_LastLockState)
-                {
-                    m_LastLockState = UnityEngine.Cursor.lockState;
-                    ShowLockNotification();
-                }
-            }
-
-            // Update notification visibility based on timer
-            if (m_NotificationTimer > 0f)
-            {
-                m_NotificationTimer -= Time.deltaTime;
-                if (m_NotificationTimer <= 0f && m_LockNotificationLabel != null)
-                {
-                    m_LockNotificationLabel.style.display = DisplayStyle.None;
-                }
-            }
-
-            // Allow toggling cursor lock with Tab key (for testing)
-            var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.tabKey.wasPressedThisFrame)
-            {
-                if (UnityEngine.Cursor.lockState == CursorLockMode.Locked)
-                {
-                    UnityEngine.Cursor.lockState = CursorLockMode.None;
-                    UnityEngine.Cursor.visible = true;
-                    UnityEngine.Debug.Log("[CustomCursor] Cursor unlocked (Tab pressed)");
-                }
-                else
-                {
-                    UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-                    UnityEngine.Cursor.visible = false;
-                    UnityEngine.Debug.Log("[CustomCursor] Cursor locked (Tab pressed)");
-                }
-            }
+            // Mouse input handled directly in code - no locking
         }
 
         void CreateLockNotificationUI()
         {
-            if (!m_ShowLockNotification || m_Root == null)
-                return;
-
-            // Create notification label if it doesn't exist
-            m_LockNotificationLabel = new Label();
-            m_LockNotificationLabel.name = "cursor-lock-notification";
-            m_LockNotificationLabel.style.position = Position.Absolute;
-            m_LockNotificationLabel.style.bottom = 20;
-            m_LockNotificationLabel.style.left = 50;
-            m_LockNotificationLabel.style.width = 400;
-            m_LockNotificationLabel.style.height = 40;
-            m_LockNotificationLabel.style.fontSize = 18;
-            m_LockNotificationLabel.style.color = new Color(1f, 1f, 1f, 1f);
-            m_LockNotificationLabel.style.backgroundColor = new Color(0f, 0f, 0f, 0.7f);
-            m_LockNotificationLabel.style.borderBottomLeftRadius = 5;
-            m_LockNotificationLabel.style.borderBottomRightRadius = 5;
-            m_LockNotificationLabel.style.borderTopLeftRadius = 5;
-            m_LockNotificationLabel.style.borderTopRightRadius = 5;
-            m_LockNotificationLabel.style.paddingLeft = 15;
-            m_LockNotificationLabel.style.paddingRight = 15;
-            m_LockNotificationLabel.style.alignItems = Align.Center;
-            m_LockNotificationLabel.style.justifyContent = Justify.Center;
-            m_LockNotificationLabel.style.display = DisplayStyle.None;
-
-            m_Root.Add(m_LockNotificationLabel);
-            UnityEngine.Debug.Log("[CustomCursor] Lock notification UI created");
+            // Lock notification UI disabled - mouse locking removed
         }
 
         void ShowLockNotification()
         {
-            if (m_LockNotificationLabel == null)
-                return;
-
-            string message = UnityEngine.Cursor.lockState == CursorLockMode.Locked
-                ? "🔒 Mouse Locked (Press Tab to unlock)"
-                : "🔓 Mouse Unlocked (Press Tab to lock)";
-
-            m_LockNotificationLabel.text = message;
-            m_LockNotificationLabel.style.display = DisplayStyle.Flex;
-            m_NotificationTimer = m_NotificationDuration;
-
-            UnityEngine.Debug.Log($"[CustomCursor] {message}");
+            // Lock notification disabled - mouse locking removed
         }
         
         void InitializeUIDocument()

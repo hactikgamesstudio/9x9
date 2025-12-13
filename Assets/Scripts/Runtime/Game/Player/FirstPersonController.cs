@@ -106,27 +106,13 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
             // With PlayerInput set to "Invoke Unity Events", inputs are fed via callbacks below.
-            // Here we only handle cursor lock toggles using Input System when available.
-            var keyboard = UnityEngine.InputSystem.Keyboard.current;
-            var mouse = UnityEngine.InputSystem.Mouse.current;
-            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            // Mouse inputs handled directly in code - no cursor locking
 #else
             // Legacy Input Manager polling
             m_MoveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             m_LookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
             if (Input.GetButtonDown("Jump") && m_IsGrounded) m_JumpInput = true;
             m_SprintInput = Input.GetKey(KeyCode.LeftShift);
-            if (Input.GetKeyDown(KeyCode.Escape)) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
-            if (Input.GetMouseButtonDown(0)) { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
 #endif
         }
 

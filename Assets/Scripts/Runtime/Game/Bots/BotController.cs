@@ -1,11 +1,13 @@
 using UnityEngine;
 using Unity.Netcode;
+using System;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
     /// <summary>
     /// Handles AI behavior for bot players in singleplayer mode
     /// Implements movement, combat, item pickup, and puzzle solving
+    /// Mimics FirstPersonController behavior for consistency
     /// </summary>
     public class BotController : MonoBehaviour
     {
@@ -22,6 +24,10 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         [SerializeField]
         private float m_UpdateInterval = 0.5f;
 
+        [Header("Health")]
+        [SerializeField]
+        private int m_MaxHealth = 100;
+
         [Header("AI Behavior")]
         [SerializeField]
         private float m_PathfindingInterval = 1f;
@@ -32,7 +38,11 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         [SerializeField]
         private float m_CombatRange = 10f;
 
-        // Internal state
+        // Health state
+        private int m_CurrentHealth;
+        public event Action<int> HealthChanged;
+        
+        // AI state
         private Player m_Player;
         private CharacterController m_CharacterController;
         private BotState m_CurrentState = BotState.Idle;
@@ -40,6 +50,11 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         private float m_StateTimer = 0f;
         private Vector3 m_Velocity = Vector3.zero;
         private const float k_Gravity = 9.81f;
+
+        // Properties
+        public int Health => m_CurrentHealth;
+        public int MaxHealth => m_MaxHealth;
+        public bool IsDead => m_CurrentHealth <= 0;
 
         void Awake()
         {
@@ -57,8 +72,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             // Initialize bot name in gameobject
             gameObject.name = m_BotName;
+            m_CurrentHealth = m_MaxHealth;
 
-            m_CurrentState = BotState.Patrolling;
         }
 
         void Update()
@@ -180,6 +195,35 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             // TODO: Implement item collection logic
             Debug.Log($"[BotController] {m_BotName} - Item collection state placeholder");
+        }
+
+        /// <summary>
+        /// Take damage (called by hazards and weapons)
+        /// </summary>
+        public void TakeDamage(int amount)
+        {
+            if (IsDead) return;
+
+            m_CurrentHealth = Mathf.Max(0, m_CurrentHealth - amount);
+            HealthChanged?.Invoke(m_CurrentHealth);
+
+            if (m_CurrentHealth == 0)
+            {
+                Debug.Log($"[BotController] {m_BotName} has been eliminated!");
+                // Trigger death behavior - could disable, ragdoll, etc.
+                enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Heal bot
+        /// </summary>
+        public void Heal(int amount)
+        {
+            if (IsDead) return;
+
+            m_CurrentHealth = Mathf.Min(m_MaxHealth, m_CurrentHealth + amount);
+            HealthChanged?.Invoke(m_CurrentHealth);
         }
 
         /// <summary>
