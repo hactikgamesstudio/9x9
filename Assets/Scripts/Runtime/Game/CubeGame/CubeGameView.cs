@@ -35,7 +35,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 // Ensure HUD exists; try reflection first, then create runtime fallback
                 if (m_HUD == null)
                 {
-                    var hudType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.HUDController");
+                    var hudType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.UI.HUD.HUDController");
                     if (hudType != null)
                         m_HUD = (MonoBehaviour)Object.FindAnyObjectByType(hudType);
                     
@@ -51,7 +51,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 // Ensure Match Recap exists; try reflection first, then create runtime fallback
                 if (m_MatchRecap == null)
                 {
-                    var recapType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.MatchRecapView");
+                    var recapType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.UI.HUD.MatchRecapView");
                     if (recapType != null)
                         m_MatchRecap = (MonoBehaviour)Object.FindAnyObjectByType(recapType);
                     
@@ -96,7 +96,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             uiDoc.rootVisualElement.Add(root);
 
             // Attach a lightweight HUDController if available via reflection
-            var hudType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.HUDController");
+            var hudType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.UI.HUD.HUDController");
             if (hudType != null)
             {
                 m_HUD = (MonoBehaviour)go.AddComponent(hudType);

@@ -1,6 +1,6 @@
-using UnityEngine;
-using Unity.Netcode;
 using System;
+using Unity.Netcode;
+using UnityEngine;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
@@ -143,7 +143,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             if (m_StateTimer > m_PathfindingInterval)
             {
                 // Pick a random direction
-                Vector3 randomDirection = Random.onUnitSphere;
+                Vector3 randomDirection = UnityEngine.Random.onUnitSphere;
                 randomDirection.y = 0; // Keep horizontal
                 m_CurrentTarget = randomDirection.normalized;
                 m_StateTimer = 0f;

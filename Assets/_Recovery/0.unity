@@ -621,7 +621,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 599980325
+  GlobalObjectIdHash: 2633375206
   InScenePlacedSourceGlobalObjectIdHash: 241619285
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1093,6 +1093,14 @@ PrefabInstance:
       propertyPath: m_TagString
       value: MainCamera
       objectReference: {fileID: 0}
+    - target: {fileID: 4216581305797874140, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
+      propertyPath: sourceAsset
+      value: 
+      objectReference: {fileID: 9197481963319205126, guid: 4c4a65d85867be3439cd93bf1ef389eb, type: 3}
+    - target: {fileID: 4216581305797874140, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
+      propertyPath: m_PanelSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 17248bf6192ffad43b8ab0d7fa77c2f9, type: 2}
     - target: {fileID: 6350193179812514416, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
       propertyPath: m_ComponentsRolesMasks.Array.size
       value: 0
