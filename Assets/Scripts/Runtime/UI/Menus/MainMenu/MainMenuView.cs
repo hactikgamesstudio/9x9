@@ -4,7 +4,7 @@ using Unity.Template.Multiplayer.NGO.Core;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
 {
-    internal class MainMenuView : View<MetagameApplication>
+    public class MainMenuView : View<MetagameApplication>
     {
         [SerializeField]
         private MenuManager menuManager;
@@ -37,7 +37,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
         /// Disable menu options that are not supported when auto-connect is enabled (dedicated server flow).
         /// Mirrors the old UI Toolkit behavior by making the SinglePlayer and Multiplayer buttons non-interactable.
         /// </summary>
-        internal void DisableControlsUnsupportedInAutoconnectMode()
+        public void DisableControlsUnsupportedInAutoconnectMode()
         {
             if (CustomNetworkManager.Singleton == null || !CustomNetworkManager.Singleton.AutoConnectOnStartup)
             {

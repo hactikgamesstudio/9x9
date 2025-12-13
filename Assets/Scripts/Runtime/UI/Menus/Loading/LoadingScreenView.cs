@@ -3,7 +3,7 @@ using Unity.Template.Multiplayer.NGO.Core;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Loading
 {
-    internal class LoadingScreenView : View<MetagameApplication>
+    public class LoadingScreenView : View<MetagameApplication>
     {
         Button m_QuitButton;
         VisualElement m_Root;

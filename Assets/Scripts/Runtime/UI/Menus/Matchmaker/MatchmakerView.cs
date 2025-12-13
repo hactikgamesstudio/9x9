@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 using Unity.Template.Multiplayer.NGO.Core;
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Matchmaker
 {
-    internal class MatchmakerView : View<MetagameApplication>
+    public class MatchmakerView : View<MetagameApplication>
     {
         Button m_QuitButton;
         Label m_TimerLabel;

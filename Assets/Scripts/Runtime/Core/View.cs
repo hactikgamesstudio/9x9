@@ -16,12 +16,12 @@
         /// </summary>
         new public T App => (T)base.App;
 
-        internal void Show()
+        public void Show()
         {
             gameObject.SetActive(true);
         }
 
-        internal void Hide()
+        public void Hide()
         {
             gameObject.SetActive(false);
         }
