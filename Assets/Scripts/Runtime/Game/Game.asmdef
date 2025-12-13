@@ -1,13 +1,11 @@
 {
-    "name": "Unity.Template.Multiplayer.NGO.Runtime.UI",
-    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime.UI",
+    "name": "Unity.Template.Multiplayer.NGO.Runtime.Game",
+    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
     "references": [
+        "Unity.Template.Multiplayer.NGO.Runtime.Core",
         "Unity.Netcode.GameObjects",
-        "Unity.Services.Matchmaker",
-        "Unity.Services.Multiplayer",
         "Unity.InputSystem",
-        "TextMeshPro",
-        "UnityEngine.UI"
+        "Unity.Collections"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
