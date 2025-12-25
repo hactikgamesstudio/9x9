@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
-    internal class Player : NetworkBehaviour
+    public class Player : NetworkBehaviour
     {
         /// <summary>
         /// Is this player currently alive?
@@ -31,7 +31,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             {
                 MetagameApplication.Instance.Broadcast(new MatchEnteredEvent());
             }
-            Debug.Log("[Local client] Preparing game [Showing loading screen]");
+            UnityEngine.Debug.Log("[Local client] Preparing game [Showing loading screen]");
             if (!IsServer) //the server already does this before asking clients to do the same
             {
                 CustomNetworkManager.Singleton.InstantiateGameApplication();
@@ -41,14 +41,14 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         internal void OnClientReadyToStart()
         {
-            Debug.Log("[Local client] Notifying server I'm ready");
+            UnityEngine.Debug.Log("[Local client] Notifying server I'm ready");
             OnServerNotifiedOfClientReadinessServerRpc();
         }
 
         [ServerRpc]
         internal void OnServerNotifiedOfClientReadinessServerRpc()
         {
-            Debug.Log("[Server] I'm ready");
+            UnityEngine.Debug.Log("[Server] I'm ready");
             CustomNetworkManager.Singleton.OnServerPlayerIsReady(this);
         }
 

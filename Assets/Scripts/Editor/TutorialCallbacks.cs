@@ -3,8 +3,8 @@ using UnityEditor;
 using Unity.Tutorials.Core.Editor;
 using Unity.Netcode;
 using System.IO;
-using Unity.Services.Core.Editor.Environments;
-using Unity.Services.DeploymentApi.Editor;
+// using Unity.Services.Core.Editor.Environments;
+// using Unity.Services.DeploymentApi.Editor;
 using static UnityEditor.Progress;
 
 namespace Unity.Template.Multiplayer.NGO.Editor
@@ -82,79 +82,87 @@ namespace Unity.Template.Multiplayer.NGO.Editor
 
         public bool IsUnityCloudEnvironmentSet()
         {
-            return EnvironmentsApi.Instance.ActiveEnvironmentName == "production";
+            // TODO: Integrate with Unity Services Core when Environments API is available
+            // return EnvironmentsApi.Instance.ActiveEnvironmentName == "production";
+            return !string.IsNullOrEmpty(Application.cloudProjectId);
         }
 
         public bool IsUploadingBuildToCloud()
         {
-            foreach (var provider in Deployments.Instance.DeploymentProviders)
-            {
-                foreach (var item in provider.DeploymentItems)
-                {
-                    if (item.Name == "LinuxTestBuild.build")
-                    {
-                        return item.Progress > 0;
-                    }
-                }
-            }
+            // TODO: Integrate with Deployment API when package is available
+            // foreach (var provider in Deployments.Instance.DeploymentProviders)
+            // {
+            //     foreach (var item in provider.DeploymentItems)
+            //     {
+            //         if (item.Name == "LinuxTestBuild.build")
+            //         {
+            //             return item.Progress > 0;
+            //         }
+            //     }
+            // }
             return false;
         }
 
         public bool WaitUntilBuildIsUploadedToCloud()
         {
-            foreach (var provider in Deployments.Instance.DeploymentProviders)
-            {
-                foreach (var item in provider.DeploymentItems)
-                {
-                    if (item.Name == "LinuxTestBuild.build")
-                    {
-                        return item.Status.Message == "Deployed";
-                    }
-                }
-            }
+            // TODO: Integrate with Deployment API when package is available
+            // foreach (var provider in Deployments.Instance.DeploymentProviders)
+            // {
+            //     foreach (var item in provider.DeploymentItems)
+            //     {
+            //         if (item.Name == "LinuxTestBuild.build")
+            //         {
+            //             return item.Status.Message == "Deployed";
+            //         }
+            //     }
+            // }
             return false;
         }
 
         public bool WaitUntilFleetAndConfigurationAreDeployed()
         {
-            bool fleetConfigDeployed = false;
-            bool buildConfigDeployed = false;
-            foreach (var provider in Deployments.Instance.DeploymentProviders)
-            {
-                foreach (var item in provider.DeploymentItems)
-                {
-                    if (item.Name == "LinuxTestFleet.fleet")
-                    {
-                        fleetConfigDeployed = item.Status.Message == "Deployed";
-                    }
-                    else if (item.Name == "LinuxBuildConfiguration.buildConfig")
-                    {
-                        buildConfigDeployed = item.Status.Message == "Deployed";
-                    }
-                }
-            }
-            return fleetConfigDeployed && buildConfigDeployed;
+            // TODO: Integrate with Deployment API when package is available
+            // bool fleetConfigDeployed = false;
+            // bool buildConfigDeployed = false;
+            // foreach (var provider in Deployments.Instance.DeploymentProviders)
+            // {
+            //     foreach (var item in provider.DeploymentItems)
+            //     {
+            //         if (item.Name == "LinuxTestFleet.fleet")
+            //         {
+            //             fleetConfigDeployed = item.Status.Message == "Deployed";
+            //         }
+            //         else if (item.Name == "LinuxBuildConfiguration.buildConfig")
+            //         {
+            //             buildConfigDeployed = item.Status.Message == "Deployed";
+            //         }
+            //     }
+            // }
+            // return fleetConfigDeployed && buildConfigDeployed;
+            return false;
         }
 
         public bool WaitUntilMatchmakerConfigurationIsDeployed()
         {
-            bool matchmakerQueueConfigDeployed = false;
-            bool matchmakerEnvironmentConfigDeployed = false;
-            foreach (var provider in Deployments.Instance.DeploymentProviders)
-            {
-                foreach (var item in provider.DeploymentItems)
-                {
-                    if (item.Name == "MatchmakerQueue.mmq")
-                    {
-                        matchmakerQueueConfigDeployed = item.Status.Message == "Deployed";
-                    }
-                    else if (item.Name == "MatchmakerEnvironment.mme")
-                    {
-                        matchmakerEnvironmentConfigDeployed = item.Status.Message == "Deployed";
-                    }
-                }
-            }
-            return matchmakerQueueConfigDeployed && matchmakerEnvironmentConfigDeployed;
+            // TODO: Integrate with Deployment API when package is available
+            // bool matchmakerQueueConfigDeployed = false;
+            // bool matchmakerEnvironmentConfigDeployed = false;
+            // foreach (var provider in Deployments.Instance.DeploymentProviders)
+            // {
+            //     foreach (var item in provider.DeploymentItems)
+            //     {
+            //         if (item.Name == "MatchmakerQueue.mmq")
+            //         {
+            //             matchmakerQueueConfigDeployed = item.Status.Message == "Deployed";
+            //         }
+            //         else if (item.Name == "MatchmakerEnvironment.mme")
+            //         {
+            //             matchmakerEnvironmentConfigDeployed = item.Status.Message == "Deployed";
+            //         }
+            //     }
+            // }
+            // return matchmakerQueueConfigDeployed && matchmakerEnvironmentConfigDeployed;
+            return false;
         }
 
         public bool LinuxServerBuildExists()
@@ -192,16 +200,20 @@ namespace Unity.Template.Multiplayer.NGO.Editor
 
         public bool IsBootstrapperSetupProperly(int requiredPlayers)
         {
-            var boostrapperWindow = EditorWindow.GetWindow<BootstrapperWindow>("Bootstrapper", false);
-            return boostrapperWindow.AutoConnectOnStartup
-                && boostrapperWindow.OverrideMultiplayerRole
-                && boostrapperWindow.HostSelf
-                && boostrapperWindow.MaxPlayers == requiredPlayers;
+            // TODO: Integrate with BootstrapperWindow when it's available
+            // var boostrapperWindow = EditorWindow.GetWindow<BootstrapperWindow>("Bootstrapper", false);
+            // return boostrapperWindow.AutoConnectOnStartup
+            //     && boostrapperWindow.OverrideMultiplayerRole
+            //     && boostrapperWindow.HostSelf
+            //     && boostrapperWindow.MaxPlayers == requiredPlayers;
+            return false;
         }
 
         public void EnableMultiplayInCloudDashboard()
         {
-            OpenURL($"https://cloud.unity3d.com/organizations/{CloudProjectSettings.organizationKey}/projects/{CloudProjectSettings.projectId}/environments/{EnvironmentsApi.Instance.ActiveEnvironmentId}/multiplay/overview");
+            // TODO: Integrate with CloudProjectSettings and EnvironmentsApi when packages are available
+            // OpenURL($"https://cloud.unity3d.com/organizations/{CloudProjectSettings.organizationKey}/projects/{CloudProjectSettings.projectId}/environments/{EnvironmentsApi.Instance.ActiveEnvironmentId}/multiplay/overview");
+            OpenURL("https://cloud.unity3d.com/");
         }
     }
 }

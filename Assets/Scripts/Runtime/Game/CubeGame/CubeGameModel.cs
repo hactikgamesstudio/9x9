@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Template.Multiplayer.NGO.Core;
 using UnityEngine;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
@@ -62,7 +63,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             MazeDataSynchronizer = Object.FindFirstObjectByType<MazeDataSynchronizer>();
             if (MazeDataSynchronizer == null)
             {
-                Debug.LogWarning(
+                UnityEngine.Debug.LogWarning(
                     "[9x9] MazeDataSynchronizer not found! Network synchronization disabled."
                 );
             }

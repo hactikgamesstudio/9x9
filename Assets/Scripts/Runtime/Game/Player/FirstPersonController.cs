@@ -1,364 +1,239 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
-    /// <summary>
-    /// First-person player controller with movement, jumping, sprinting, and health management.
-    /// This is a direct port from Godot's CharacterBody3D.gd script.
-    ///
-    /// **FOR BEGINNERS:**
-    /// - CharacterController is Unity's built-in component for player movement with collision
-    /// - Input System (new) replaces the old Input.GetAxis system
-    /// - Events (C# events/delegates) work like Godot signals for communication between scripts
-    /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class FirstPersonController : MonoBehaviour
     {
-#region Inspector Variables (Godot @export equivalent)
+        [Header("Health")]
+        [SerializeField] private int m_MaxHealth = 100;
 
-        [Header("Movement Settings")]
-        [Tooltip("Normal walking speed in units per second")]
-        [SerializeField]
-        private float m_Speed = 5f;
 
-        [Tooltip("Sprint speed when holding shift")]
-        [SerializeField]
-        private float m_SprintSpeed = 7f;
+        private int m_CurrentHealth;
+        public event Action<int> HealthChanged;
 
-        [Tooltip("Initial upward velocity when jumping")]
-        [SerializeField]
-        private float m_JumpVelocity = 4.5f;
+        [Header("Movement")]
+        [Tooltip("Walking speed in units per second")]
+        [SerializeField] private float m_WalkSpeed = 5f;
 
-        [Header("Camera Settings")]
-        [Tooltip("Mouse sensitivity for looking around")]
-        [SerializeField]
-        private float m_Sensitivity = 0.3f;
 
-        [Tooltip("Reference to the camera (usually a child object)")]
-        [SerializeField]
-        private Camera m_Camera;
+        
+        [Tooltip("Sprint speed when holding Shift")]
+        [SerializeField] private float m_SprintSpeed = 8f;
 
-        [Tooltip("Minimum camera pitch angle (looking down)")]
-        [SerializeField]
-        private float m_MinCameraPitch = -90f;
 
-        [Tooltip("Maximum camera pitch angle (looking up)")]
-        [SerializeField]
-        private float m_MaxCameraPitch = 90f;
+        
+        [Tooltip("Jump height in units")]
+        [SerializeField] private float m_JumpHeight = 1.5f;
 
-        [Tooltip("Normal field of view")]
-        [SerializeField]
-        private float m_NormalFOV = 85f;
 
-        [Tooltip("Sprint field of view (zoom effect)")]
-        [SerializeField]
-        private float m_SprintFOV = 110f;
+        
+        [Tooltip("Gravity force")]
+        [SerializeField] private float m_Gravity = -9.81f;
 
-        [Tooltip("FOV transition speed")]
-        [SerializeField]
-        private float m_FOVTransitionSpeed = 5f;
 
-        [Header("Health Settings")]
-        [Tooltip("Maximum health points")]
-        [SerializeField]
-        private int m_MaxHealth = 100;
 
-#endregion
+        [Header("Mouse Look")]
+        [Tooltip("Mouse sensitivity multiplier")]
+        [SerializeField] private float m_MouseSensitivity = 2f;
 
-#region Private Variables
+
+        
+        [Tooltip("Maximum vertical look angle (prevents over-rotation)")]
+        [SerializeField] private float m_MaxLookAngle = 80f;
+
+
+        
+        [Tooltip("Camera transform for mouse look (auto-finds if null)")]
+        [SerializeField] private Transform m_CameraTransform;
+
+
+
+        [Header("Ground Check")]
+        [SerializeField] private float m_GroundCheckDistance = 0.2f;
+
+
+        [SerializeField] private LayerMask m_GroundMask = 1; // Default layer
+
+
 
         private CharacterController m_CharacterController;
-        private float m_CameraPitch; // Current X rotation of camera
-        private float m_Yaw; // Current Y rotation of player body
         private Vector3 m_Velocity;
-        private float m_CurrentSpeed;
-        private int m_Health;
-        private float m_TargetFOV;
-
-        // Input values from new Input System
+        private float m_RotationX = 0f;
+        private bool m_IsGrounded;
         private Vector2 m_MoveInput;
         private Vector2 m_LookInput;
         private bool m_JumpInput;
         private bool m_SprintInput;
 
-#endregion
-
-#region Events (Godot signals equivalent)
-
-        /// <summary>
-        /// Event fired when health changes. Other scripts (like HUD) can subscribe to this.
-        /// In Godot this was: signal health_changed(new_health: int)
-        /// In C#: public event System.Action<int> HealthChanged;
-        /// </summary>
-        public event System.Action<int> HealthChanged;
-
-#endregion
-
-#region Properties (Public access to private data)
-
-        public int Health => m_Health;
+        public int Health => m_CurrentHealth;
         public int MaxHealth => m_MaxHealth;
 
-#endregion
-
-#region Unity Lifecycle Methods
-
-        /// <summary>
-        /// Called when script instance is loaded. Similar to Godot's _ready().
-        /// **FOR BEGINNERS:**
-        /// - Awake() is called before Start(), use for component references
-        /// - Start() is called before first frame, use for initialization
-        /// - GetComponent<T>() finds a component attached to the same GameObject
-        /// </summary>
-        void Awake()
+        private void Awake()
         {
             m_CharacterController = GetComponent<CharacterController>();
-
-            // If camera not assigned in inspector, try to find it
-            if (m_Camera == null)
+            
+            // Auto-find camera if not assigned
+            if (m_CameraTransform == null)
             {
-                m_Camera = GetComponentInChildren<Camera>();
+                var cam = GetComponentInChildren<Camera>();
+                if (cam != null)
+                {
+                    m_CameraTransform = cam.transform;
+                }
             }
 
-            m_Health = m_MaxHealth;
-            m_CurrentSpeed = m_Speed;
-            m_TargetFOV = m_NormalFOV;
+            // Start with cursor UNLOCKED for menu navigation
+            // Player can lock cursor later by clicking in-game
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
-        /// <summary>
-        /// Called on first frame. Good for finding other objects in scene.
-        /// </summary>
-        void Start()
+        private void Start()
         {
-            // Lock and hide cursor (Godot's MOUSE_MODE_CAPTURED)
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-
-            // Notify HUD of initial health
-            HealthChanged?.Invoke(m_Health);
+            m_CurrentHealth = m_MaxHealth;
         }
 
-        /// <summary>
-        /// Called every frame. Use for input and non-physics updates.
-        /// In Godot this was handled in _process() and _input().
-        /// **FOR BEGINNERS:**
-        /// - Update() runs every frame (variable framerate)
-        /// - FixedUpdate() runs at fixed intervals (for physics)
-        /// - Delta time = Time.deltaTime (time since last frame)
-        /// </summary>
-        void Update()
+        private void Update()
         {
+            HandleInput();
             HandleMouseLook();
-            HandleFOVTransition();
-        }
-
-        /// <summary>
-        /// Physics update - called at fixed intervals. Similar to Godot's _physics_process(delta).
-        /// Use for movement and physics calculations.
-        /// </summary>
-        void FixedUpdate()
-        {
             HandleMovement();
         }
 
-#endregion
+        private void HandleInput()
+        {
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+            // With PlayerInput set to "Invoke Unity Events", inputs are fed via callbacks below.
+            // Mouse inputs handled directly in code - no cursor locking
+#else
+            // Legacy Input Manager polling
+            m_MoveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            m_LookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            if (Input.GetButtonDown("Jump") && m_IsGrounded) m_JumpInput = true;
+            m_SprintInput = Input.GetKey(KeyCode.LeftShift);
+#endif
+        }
 
-#region Input Handling (New Input System callbacks)
+        private void HandleMouseLook()
+        {
+            if (m_CameraTransform == null)
+                return;
 
-        /// <summary>
-        /// Called by Input System when WASD/arrow keys are pressed.
-        /// **FOR BEGINNERS:**
-        /// - These methods are called automatically by Unity's Input System
-        /// - You need to set up Input Actions in Project Settings > Input System
-        /// - context.ReadValue<Vector2>() gets the input value
-        /// </summary>
-        public void OnMove(InputAction.CallbackContext context)
+
+            // Horizontal rotation (Y-axis) - rotate the player body
+            float mouseX = m_LookInput.x * m_MouseSensitivity;
+            transform.Rotate(Vector3.up * mouseX);
+
+            // Vertical rotation (X-axis) - rotate the camera
+            float mouseY = m_LookInput.y * m_MouseSensitivity;
+            m_RotationX -= mouseY;
+            m_RotationX = Mathf.Clamp(m_RotationX, -m_MaxLookAngle, m_MaxLookAngle);
+            m_CameraTransform.localRotation = Quaternion.Euler(m_RotationX, 0f, 0f);
+        }
+
+        private void HandleMovement()
+        {
+            // Use CharacterController's isGrounded for reliability
+            m_IsGrounded = m_CharacterController.isGrounded;
+
+            // Reset vertical velocity when grounded
+            if (m_IsGrounded && m_Velocity.y < 0)
+            {
+                m_Velocity.y = -2f; // Small downward force to keep grounded
+            }
+
+            // Calculate movement direction
+            Vector3 moveDirection = transform.right * m_MoveInput.x + transform.forward * m_MoveInput.y;
+
+
+            moveDirection.Normalize();
+
+            // Apply speed (sprint or walk)
+            float currentSpeed = m_SprintInput ? m_SprintSpeed : m_WalkSpeed;
+            Vector3 move = moveDirection * currentSpeed;
+
+            // Apply jump
+            if (m_JumpInput && m_IsGrounded)
+            {
+                m_Velocity.y = Mathf.Sqrt(m_JumpHeight * -2f * m_Gravity);
+                m_JumpInput = false;
+            }
+
+            // Apply gravity
+            m_Velocity.y += m_Gravity * Time.deltaTime;
+
+            // Combine horizontal movement and vertical velocity
+            move.y = m_Velocity.y;
+
+            // Move the character
+            m_CharacterController.Move(move * Time.deltaTime);
+        }
+
+        public void TakeDamage(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+
+            m_CurrentHealth = Mathf.Max(0, m_CurrentHealth - amount);
+            HealthChanged?.Invoke(m_CurrentHealth);
+
+            if (m_CurrentHealth == 0)
+                Die();
+
+        }
+
+        public void Heal(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+
+            m_CurrentHealth = Mathf.Min(m_MaxHealth, m_CurrentHealth + amount);
+            HealthChanged?.Invoke(m_CurrentHealth);
+        }
+
+        private void Die()
+        {
+            // Handle player death: disable input, play animation, respawn logic, etc.
+            enabled = false;
+            UnityEngine.Debug.Log($"{name} died.");
+            
+            // Broadcast death event via current game application (safer across assemblies)
+            var app = CustomNetworkManager.Singleton?.CurrentGameApp;
+            if (app != null)
+            {
+                var player = GetComponent<Player>();
+                app.Broadcast(new PlayerDiedEvent(player));
+            }
+        }
+
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+        // PlayerInput event callbacks
+        public void OnMove(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             m_MoveInput = context.ReadValue<Vector2>();
         }
 
-        public void OnLook(InputAction.CallbackContext context)
+        public void OnLook(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             m_LookInput = context.ReadValue<Vector2>();
         }
 
-        public void OnJump(InputAction.CallbackContext context)
+        public void OnJump(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            m_JumpInput = context.ReadValueAsButton();
-        }
-
-        public void OnSprint(InputAction.CallbackContext context)
-        {
-            m_SprintInput = context.ReadValueAsButton();
-
-            if (m_SprintInput)
+            if (context.performed && m_IsGrounded)
             {
-                m_CurrentSpeed = m_SprintSpeed;
-                m_TargetFOV = m_SprintFOV;
-            }
-            else
-            {
-                m_CurrentSpeed = m_Speed;
-                m_TargetFOV = m_NormalFOV;
+                m_JumpInput = true;
             }
         }
 
-#endregion
-
-#region Movement & Camera Logic
-
-        /// <summary>
-        /// Handles mouse look (camera rotation). In Godot this was in _input().
-        /// </summary>
-        void HandleMouseLook()
+        public void OnSprint(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
-            // Apply mouse look (Y axis controls pitch, X axis controls yaw)
-            m_CameraPitch -= m_LookInput.y * m_Sensitivity * Time.deltaTime * 100f;
-            m_CameraPitch = Mathf.Clamp(m_CameraPitch, m_MinCameraPitch, m_MaxCameraPitch);
-
-            m_Yaw += m_LookInput.x * m_Sensitivity * Time.deltaTime * 100f;
-
-            // Apply rotations
-            if (m_Camera != null)
-            {
-                m_Camera.transform.localRotation = Quaternion.Euler(m_CameraPitch, 0f, 0f);
-            }
-            transform.rotation = Quaternion.Euler(0f, m_Yaw, 0f);
+            m_SprintInput = context.performed;
         }
-
-        /// <summary>
-        /// Smoothly transitions FOV when sprinting. In Godot this was direct assignment.
-        /// </summary>
-        void HandleFOVTransition()
-        {
-            if (m_Camera != null)
-            {
-                m_Camera.fieldOfView = Mathf.Lerp(
-                    m_Camera.fieldOfView,
-                    m_TargetFOV,
-                    Time.deltaTime * m_FOVTransitionSpeed
-                );
-            }
-        }
-
-        /// <summary>
-        /// Handles player movement and jumping. In Godot this was in _physics_process().
-        /// **FOR BEGINNERS:**
-        /// - CharacterController.Move() is like Godot's move_and_slide()
-        /// - CharacterController.isGrounded checks if touching ground
-        /// - Transform.TransformDirection converts local direction to world direction
-        /// </summary>
-        void HandleMovement()
-        {
-            // Apply gravity (CharacterController doesn't do this automatically)
-            if (!m_CharacterController.isGrounded)
-            {
-                m_Velocity.y -= 9.81f * Time.fixedDeltaTime;
-            }
-            else
-            {
-                // Reset Y velocity when grounded
-                m_Velocity.y = -2f; // Small negative to keep grounded
-            }
-
-            // Handle jumping
-            if (m_JumpInput && m_CharacterController.isGrounded)
-            {
-                m_Velocity.y = m_JumpVelocity;
-            }
-
-            // Calculate movement direction relative to player rotation
-            Vector3 moveDirection = new Vector3(m_MoveInput.x, 0f, m_MoveInput.y);
-            moveDirection = transform.TransformDirection(moveDirection);
-            moveDirection.Normalize();
-
-            // Apply horizontal movement
-            if (moveDirection.magnitude > 0.1f)
-            {
-                m_Velocity.x = moveDirection.x * m_CurrentSpeed;
-                m_Velocity.z = moveDirection.z * m_CurrentSpeed;
-            }
-            else
-            {
-                // Decelerate to zero (like Godot's move_toward)
-                m_Velocity.x = Mathf.MoveTowards(
-                    m_Velocity.x,
-                    0f,
-                    m_CurrentSpeed * Time.fixedDeltaTime * 2f
-                );
-                m_Velocity.z = Mathf.MoveTowards(
-                    m_Velocity.z,
-                    0f,
-                    m_CurrentSpeed * Time.fixedDeltaTime * 2f
-                );
-            }
-
-            // Move the character
-            m_CharacterController.Move(m_Velocity * Time.fixedDeltaTime);
-        }
-
-#endregion
-
-#region Health Management
-
-        /// <summary>
-        /// Reduces player health by specified amount. Called by hazards.
-        /// In Godot this was: func take_damage(amount: float)
-        /// </summary>
-        public void TakeDamage(int amount)
-        {
-            m_Health = Mathf.Clamp(m_Health - amount, 0, m_MaxHealth);
-            HealthChanged?.Invoke(m_Health);
-
-            if (m_Health <= 0)
-            {
-                Die();
-            }
-        }
-
-        /// <summary>
-        /// Restores player health by specified amount.
-        /// In Godot this was: func heal(amount: int)
-        /// </summary>
-        public void Heal(int amount)
-        {
-            m_Health = Mathf.Clamp(m_Health + amount, 0, m_MaxHealth);
-            HealthChanged?.Invoke(m_Health);
-        }
-
-        /// <summary>
-        /// Called when player dies. Reloads the scene.
-        /// **FOR BEGINNERS:**
-        /// - SceneManager.LoadScene() is Unity's way to change scenes
-        /// - SceneManager.GetActiveScene() gets the current scene
-        /// - You need: using UnityEngine.SceneManagement; at top of file
-        /// </summary>
-        void Die()
-        {
-            Debug.Log("Player died, reloading scene");
-            UnityEngine.SceneManagement.SceneManager.LoadScene(
-                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
-            );
-        }
-
-#endregion
-
-#region Editor Helpers
-
-        /// <summary>
-        /// Called when values change in the Inspector. Useful for validation.
-        /// Only runs in the Unity Editor, not in builds.
-        /// </summary>
-        void OnValidate()
-        {
-            m_Speed = Mathf.Max(0f, m_Speed);
-            m_SprintSpeed = Mathf.Max(m_Speed, m_SprintSpeed);
-            m_JumpVelocity = Mathf.Max(0f, m_JumpVelocity);
-            m_Sensitivity = Mathf.Max(0.01f, m_Sensitivity);
-            m_MaxHealth = Mathf.Max(1, m_MaxHealth);
-        }
-
-#endregion
+#endif
     }
 }

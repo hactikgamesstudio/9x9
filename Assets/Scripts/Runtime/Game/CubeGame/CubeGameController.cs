@@ -1,7 +1,13 @@
 using System.Collections;
 using System.Linq;
 using Unity.Netcode;
+using Unity.Template.Multiplayer.NGO.Core;
+using Unity.Template.Multiplayer.NGO.Runtime;
 using UnityEngine;
+using NGOFirstPersonController = Unity.Template.Multiplayer.NGO.Runtime.FirstPersonController;
+// Explicitly alias event types to avoid conflicts with duplicate definitions in 'Game' assembly
+using NGOPlayerDiedEvent = Unity.Template.Multiplayer.NGO.Runtime.PlayerDiedEvent;
+using NGOPlayerReachedExitEvent = Unity.Template.Multiplayer.NGO.Runtime.PlayerReachedExitEvent;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
@@ -11,120 +17,192 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     /// </summary>
     public class CubeGameController : Controller<CubeGameApplication>
     {
+        // Quick access to MVC components
         CubeGameModel Model => App.Model;
         CubeGameView View => App.View;
 
         [Header("Maze Generation")]
         [Tooltip("Reference to the RoomGenerator (will auto-find if not set)")]
         [SerializeField]
-        private RoomGenerator m_RoomGenerator;
+        private MonoBehaviour m_RoomGenerator;
 
         [Tooltip("Default room generation config (fills missing prefab references)")]
         [SerializeField]
-        private RoomGenConfig m_DefaultRoomGenConfig;
+        private ScriptableObject m_DefaultRoomGenConfig;
+
+        [Header("Mode-Specific Generation Profiles")]
+        [Tooltip("Profile for Story mode (deterministic seed, authored constraints)")]
+        [SerializeField]
+        private RoomGenProfile m_StoryModeProfile;
+
+        [Tooltip("Profile for Co-op mode (deterministic seed, co-op constraints)")]
+        [SerializeField]
+        private RoomGenProfile m_CoopModeProfile;
+
+        [Tooltip("Profile for Battle Royale (random seed, 9×9×9)")]
+        [SerializeField]
+        private RoomGenProfile m_BattleRoyaleProfile;
+
+        [Tooltip("Profile for 5×5 mode (random seed, smaller grid)")]
+        [SerializeField]
+        private RoomGenProfile m_5x5Profile;
+
+        [Tooltip("Profile for 3×3 mode (random seed, smallest grid)")]
+        [SerializeField]
+        private RoomGenProfile m_3x3Profile;
 
         private bool m_RoomGeneratorCreatedAtRuntime = false; // Tracks if RoomGenerator was created at runtime
 
+        [Header("Offline Singleplayer")]
+        [Tooltip(
+            "Prefab containing a FirstPersonController + Camera for offline singleplayer fallback when no Netcode clients exist."
+        )]
+        [SerializeField]
+        private GameObject m_OfflinePlayerPrefab;
+
+        [Header("Bot System")]
+        [SerializeField]
+        private Player m_BotPrefab;
+
+        [SerializeField]
+        private int m_MaxBots = 3;
+
+        private BotManager m_BotManager;
+
         void Awake()
         {
+            // Subscribe to game lifecycle and player events
             AddListener<StartMatchEvent>(OnServerStartMatch);
             AddListener<EndMatchEvent>(OnServerMatchEnded);
             AddListener<PlayerDisconnected>(OnServerPlayerDisconnected);
-            AddListener<PlayerReachedExitEvent>(OnPlayerReachedExit);
-            AddListener<PlayerDiedEvent>(OnPlayerDied);
+            AddListener<NGOPlayerReachedExitEvent>(OnPlayerReachedExit);
+            AddListener<NGOPlayerDiedEvent>(OnPlayerDied);
+            AddListener<AllBotsEliminatedEvent>(OnAllBotsEliminated);
 
-            // Server-only logic for RoomGenerator initialization
-            bool isServer = NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
-            if (!isServer)
+            // Treat offline singleplayer as 'server' for logic that usually runs on server
+            // This allows testing and playing without network connection
+            bool isServerOrOffline =
+                (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+                || (
+                    CustomNetworkManager.Singleton != null
+                    && !CustomNetworkManager.Singleton.IsClient
+                    && !CustomNetworkManager.Singleton.IsServer
+                );
+            if (!isServerOrOffline)
             {
-                return; // Clients don't create or configure RoomGenerator
+                return; // Early exit for network clients (server handles generation)
             }
 
-            // Auto-find RoomGenerator if not assigned
+            // Auto-find RoomGenerator in scene if not manually assigned
             if (m_RoomGenerator == null)
             {
-                m_RoomGenerator = Object.FindFirstObjectByType<RoomGenerator>();
+                // Use reflection to find RoomGenerator without hard type dependency
+                var roomGenType =
+                    System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.RoomGenerator");
+                if (roomGenType != null)
+                {
+                    m_RoomGenerator = (MonoBehaviour)Object.FindAnyObjectByType(roomGenType);
+                }
 
                 // If still not found, create a fallback RoomGenerator at runtime (server-only)
-                if (m_RoomGenerator == null)
+                if (m_RoomGenerator == null && roomGenType != null)
                 {
+                    // Create fallback RoomGenerator if none exists in scene
                     var go = new GameObject("RoomGenerator");
-                    m_RoomGenerator = go.AddComponent<RoomGenerator>();
+                    m_RoomGenerator = (MonoBehaviour)go.AddComponent(roomGenType);
                     m_RoomGeneratorCreatedAtRuntime = true;
-                    Debug.LogWarning(
+                    UnityEngine.Debug.LogWarning(
                         "[9x9 Server] RoomGenerator not found in scene. Created a runtime instance. "
                             + "Consider adding RoomGenerator to the CubeGameApplication prefab and wiring room templates."
                     );
                 }
             }
 
-            // Apply default config if available
+            // Apply default config if available (advanced generator only)
+            // Use reflection to support different RoomGenerator variants without hard dependencies
             if (m_DefaultRoomGenConfig != null)
             {
-                if (m_RoomGeneratorCreatedAtRuntime)
+                var applyConfigMethod = m_RoomGenerator.GetType().GetMethod("ApplyConfig");
+                if (applyConfigMethod != null)
                 {
-                    // Full apply: set all values from config for runtime-created generator
-                    m_RoomGenerator.ApplyConfig(
-                        m_DefaultRoomGenConfig,
-                        fillOnly: false,
-                        applyScalarSettings: true
-                    );
-                    Debug.Log(
-                        "[9x9 Server] Applied full RoomGenConfig to runtime-created RoomGenerator."
+                    // If generator was created at runtime, apply full config (all settings)
+                    if (m_RoomGeneratorCreatedAtRuntime)
+                    {
+                        _ = applyConfigMethod.Invoke(
+                            m_RoomGenerator,
+                            new object[] { m_DefaultRoomGenConfig, false, true }
+                        );
+                        UnityEngine.Debug.Log(
+                            "[9x9 Server] Applied full RoomGenConfig to runtime-created RoomGenerator."
+                        );
+                    }
+                    else
+                    {
+                        // For existing generator, only fill missing prefab references
+                        _ = applyConfigMethod.Invoke(
+                            m_RoomGenerator,
+                            new object[] { m_DefaultRoomGenConfig, true, false }
+                        );
+                        UnityEngine.Debug.Log(
+                            "[9x9 Server] Filled missing prefab references from RoomGenConfig."
+                        );
+                    }
+                }
+                else if (m_RoomGeneratorCreatedAtRuntime)
+                {
+                    UnityEngine.Debug.LogWarning(
+                        "[9x9 Server] RoomGenerator variant has no ApplyConfig; ensure templates are assigned manually."
                     );
                 }
-                else
-                {
-                    // Hybrid apply: only fill missing prefab references, preserve inspector values
-                    m_RoomGenerator.ApplyConfig(
-                        m_DefaultRoomGenConfig,
-                        fillOnly: true,
-                        applyScalarSettings: false
-                    );
-                    Debug.Log("[9x9 Server] Filled missing prefab references from RoomGenConfig.");
-                }
-            }
-            else if (m_RoomGeneratorCreatedAtRuntime)
-            {
-                Debug.LogWarning(
-                    "[9x9 Server] No RoomGenConfig assigned. Runtime-created RoomGenerator has no templates. "
-                        + "Assign m_DefaultRoomGenConfig in CubeGameController or add RoomGenerator to the prefab."
-                );
             }
         }
 
         void OnDestroy()
         {
+            // Unlock cursor when leaving gameplay
+            DisableGameplayInput();
+
+            // Unsubscribe from all events to prevent memory leaks
             RemoveListeners();
 
-            // Cleanup any runtime-created generator to avoid leaks across scenes/sessions
+            // Cleanup runtime-created generator to avoid leaks across scenes/sessions
             if (m_RoomGeneratorCreatedAtRuntime && m_RoomGenerator != null)
             {
                 Destroy(m_RoomGenerator.gameObject);
                 m_RoomGenerator = null;
                 m_RoomGeneratorCreatedAtRuntime = false;
             }
+
+            // Cleanup bots
+            if (m_BotManager != null)
+            {
+                m_BotManager.DespawnAllBots();
+                Destroy(m_BotManager.gameObject);
+                m_BotManager = null;
+            }
         }
 
         internal override void RemoveListeners()
         {
+            // Unsubscribe from all events registered in Awake
             RemoveListener<StartMatchEvent>(OnServerStartMatch);
             RemoveListener<EndMatchEvent>(OnServerMatchEnded);
             RemoveListener<PlayerDisconnected>(OnServerPlayerDisconnected);
-            RemoveListener<PlayerReachedExitEvent>(OnPlayerReachedExit);
-            RemoveListener<PlayerDiedEvent>(OnPlayerDied);
+            RemoveListener<NGOPlayerReachedExitEvent>(OnPlayerReachedExit);
+            RemoveListener<NGOPlayerDiedEvent>(OnPlayerDied);
+            RemoveListener<AllBotsEliminatedEvent>(OnAllBotsEliminated);
         }
 
         void OnServerPlayerDisconnected(PlayerDisconnected evt)
         {
-            Debug.Log($"[9x9 Server] Client {evt.ClientId} disconnected!");
+            UnityEngine.Debug.Log($"[9x9 Server] Client {evt.ClientId} disconnected!");
 
             if (Model.AllowReconnection)
             {
-                return; // Player can rejoin
+                return; // Allow player to rejoin without penalty
             }
 
-            // If in-game, check if we need to end the match
+            // If match is active, decrement alive count and check for game over
             if (Model.MatchStarted && !Model.MatchEnded)
             {
                 Model.PlayersAlive.Value--;
@@ -141,66 +219,179 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             if (evt.IsServer)
             {
-                Debug.Log("[9x9 Server] Starting maze escape game!");
+                UnityEngine.Debug.Log("[9x9 Server] Starting maze escape game!");
                 Model.MatchStarted = true;
                 Model.MatchEnded = false;
 
-                StartCoroutine(OnServerInitializeMazeGame());
+                _ = StartCoroutine(OnServerInitializeMazeGame());
             }
 
             if (evt.IsClient)
             {
-                Debug.Log("[9x9 Client] Joining maze escape game!");
+                UnityEngine.Debug.Log("[9x9 Client] Joining maze escape game!");
             }
         }
 
         /// <summary>
         /// Server-side maze initialization sequence
+        /// Generates maze, spawns players, and starts mode-specific game logic
         /// </summary>
         IEnumerator OnServerInitializeMazeGame()
         {
-            // Step 1: Generate the maze
+            // Step 1: Apply mode-specific generation profile (seed, grid size, density)
+            ScriptableObject activeProfile = GetProfileForCurrentMode();
+            if (activeProfile != null && m_RoomGenerator != null)
+            {
+                var applyProfileMethod = m_RoomGenerator.GetType().GetMethod("ApplyProfile");
+                if (applyProfileMethod != null)
+                {
+                    applyProfileMethod.Invoke(m_RoomGenerator, new object[] { activeProfile });
+                    UnityEngine.Debug.Log(
+                        $"[9x9 Server] Applied {Model.CurrentGameMode} profile: {activeProfile.name}"
+                    );
+                }
+            }
+
+            // Step 2: Generate the procedural maze (uses reflection for flexibility)
             if (m_RoomGenerator != null && !Model.MazeGenerated)
             {
-                Debug.Log("[9x9 Server] Generating 9x9x9 maze...");
-                m_RoomGenerator.Generate();
-                Model.MazeGenerated = true;
-
-                // Wait for maze generation to complete
-                yield return new WaitForSeconds(0.5f);
+                var generateMethod = m_RoomGenerator.GetType().GetMethod("Generate");
+                if (generateMethod != null)
+                {
+                    UnityEngine.Debug.Log("[9x9 Server] Generating 9x9x9 maze...");
+                    _ = generateMethod.Invoke(m_RoomGenerator, null);
+                    Model.MazeGenerated = true;
+                    yield return new WaitForSeconds(0.5f); // allow generation time
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning(
+                        "[9x9 Server] RoomGenerator variant has no Generate(); skipping maze creation."
+                    );
+                }
             }
             else if (m_RoomGenerator == null)
             {
-                Debug.LogError("[9x9 Server] RoomGenerator not found! Cannot generate maze.");
+                UnityEngine.Debug.LogError(
+                    "[9x9 Server] RoomGenerator not found! Cannot generate maze."
+                );
                 yield break;
             }
 
-            // Step 2: Count connected players
+            // Step 3: Count connected players (will be 0 in offline singleplayer)
             Model.PlayersAlive.Value = NetworkManager.Singleton.ConnectedClients.Count;
-            Debug.Log($"[9x9 Server] {Model.PlayersAlive.Value} players connected");
+            UnityEngine.Debug.Log($"[9x9 Server] {Model.PlayersAlive.Value} players connected");
 
-            // Step 3: Spawn players at corner positions
-            SpawnPlayersAtCorners();
+            // Offline singleplayer fallback: spawn local non-networked player if no clients connected
+            if (Model.PlayersAlive.Value == 0 && m_OfflinePlayerPrefab != null)
+            {
+                // Get first corner spawn position using reflection
+                Vector3 spawnPosition = Vector3.zero;
+                var cornerSpawnMethod = m_RoomGenerator
+                    .GetType()
+                    .GetMethod("GetCornerSpawnPosition");
+                if (cornerSpawnMethod != null)
+                {
+                    object result = cornerSpawnMethod.Invoke(m_RoomGenerator, new object[] { 0 });
+                    if (result is Vector3 v)
+                    {
+                        spawnPosition = v;
+                    }
+                }
+                var offlinePlayer = Instantiate(
+                    m_OfflinePlayerPrefab,
+                    spawnPosition,
+                    Quaternion.identity
+                );
+                offlinePlayer.name = "OfflinePlayer";
+                Model.PlayersAlive.Value = 1;
+                UnityEngine.Debug.Log("[9x9 Offline] Spawned offline player at " + spawnPosition);
+            }
+            else if (Model.PlayersAlive.Value == 0 && m_OfflinePlayerPrefab == null)
+            {
+                // Emergency fallback: create minimal offline player to prevent black screen
+                Vector3 spawnPosition = Vector3.zero;
+                var cornerSpawnMethod = m_RoomGenerator
+                    .GetType()
+                    .GetMethod("GetCornerSpawnPosition");
+                if (cornerSpawnMethod != null)
+                {
+                    object result = cornerSpawnMethod.Invoke(m_RoomGenerator, new object[] { 0 });
+                    if (result is Vector3 v)
+                    {
+                        spawnPosition = v;
+                    }
+                }
+                // Build simple player: CharacterController + FirstPersonController + Camera
+                var offlinePlayerGO = new GameObject("OfflinePlayer_Fallback");
+                offlinePlayerGO.transform.position = spawnPosition;
+                var cc = offlinePlayerGO.AddComponent<CharacterController>();
+                cc.center = new Vector3(0, 1, 0);
+                cc.height = 2f;
+                _ = offlinePlayerGO.AddComponent<NGOFirstPersonController>();
+                var camGO = new GameObject("Camera");
+                camGO.transform.SetParent(offlinePlayerGO.transform);
+                camGO.transform.localPosition = new Vector3(0, 1.6f, 0);
+                var cam = camGO.AddComponent<Camera>();
+                cam.tag = "MainCamera"; // Mark as main camera for rendering
+                Model.PlayersAlive.Value = 1;
+                UnityEngine.Debug.LogWarning(
+                    "[9x9 Offline] m_OfflinePlayerPrefab not assigned. Created fallback offline player at "
+                        + spawnPosition
+                );
+            }
 
-            // Step 4: Start game-specific mode logic
+            // Step 4: Spawn networked players at the 8 cube corners
+            if (Model.PlayersAlive.Value > 0 && NetworkManager.Singleton.ConnectedClients.Count > 0)
+            {
+                SpawnPlayersAtCorners();
+            }
+
+            // Step 4.5: Spawn bots for singleplayer or to fill player slots
+            if (CustomNetworkManager.Singleton != null && CustomNetworkManager.Singleton.UsingBots)
+            {
+                SpawnBotsForGameMode();
+            }
+
+            // Step 5: Initialize mode-specific game logic (timers, objectives, etc.)
             switch (Model.CurrentGameMode)
             {
                 case GameMode.BattleRoyale:
-                    StartCoroutine(RunBattleRoyaleTimer());
+                    _ = StartCoroutine(RunBattleRoyaleTimer());
                     break;
 
                 case GameMode.Coop:
-                    Debug.Log("[9x9 Server] Co-op mode: All players must reach exit");
+                    UnityEngine.Debug.Log("[9x9 Server] Co-op mode: All players must reach exit");
                     break;
 
                 default:
-                    Debug.Log("[9x9 Server] Standard mode: First to exit wins");
+                    UnityEngine.Debug.Log("[9x9 Server] Standard mode: First to exit wins");
                     break;
             }
+
+            // Step 6: Enable gameplay input - unlock cursor for mouse look
+            EnableGameplayInput();
+        }
+
+        void EnableGameplayInput()
+        {
+            // Unlock cursor for mouse look during gameplay
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = false;
+            UnityEngine.Debug.Log("[9x9 Gameplay] Cursor locked for mouse look");
+        }
+
+        void DisableGameplayInput()
+        {
+            // Unlock cursor when returning to menu
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+            UnityEngine.Debug.Log("[9x9 Gameplay] Cursor unlocked for menu");
         }
 
         /// <summary>
-        /// Spawn players at the 8 corner positions of the cube
+        /// Spawn networked players at the 8 corner positions of the 9x9x9 cube
+        /// Spreads players evenly for fairness in competitive modes
         /// </summary>
         void SpawnPlayersAtCorners()
         {
@@ -212,14 +403,39 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
             foreach (var client in connectedClients)
             {
-                Vector3 spawnPosition = m_RoomGenerator.GetCornerSpawnPosition(playerIndex);
+                // Get spawn position for this player's corner index
+                Vector3 spawnPosition = Vector3.zero;
+                var cornerSpawnMethod = m_RoomGenerator
+                    .GetType()
+                    .GetMethod("GetCornerSpawnPosition");
+                if (cornerSpawnMethod != null)
+                {
+                    object result = cornerSpawnMethod.Invoke(
+                        m_RoomGenerator,
+                        new object[] { playerIndex }
+                    );
+                    if (result is Vector3 v)
+                    {
+                        spawnPosition = v;
+                    }
+                }
+                else
+                {
+                    // Fallback: circular spawn pattern if RoomGenerator doesn't provide corners
+                    float radius = 5f;
+                    float angle = (playerIndex / (float)connectedClients.Count) * Mathf.PI * 2f;
+                    spawnPosition = new Vector3(
+                        Mathf.Cos(angle) * radius,
+                        1f,
+                        Mathf.Sin(angle) * radius
+                    );
+                }
+                var player = client.PlayerObject?.GetComponent<Player>();
 
-                // Teleport player to spawn position
-                Player player = client.PlayerObject.GetComponent<Player>();
                 if (player != null)
                 {
                     player.transform.position = spawnPosition;
-                    Debug.Log(
+                    UnityEngine.Debug.Log(
                         $"[9x9 Server] Spawned player {playerIndex} at corner {spawnPosition}"
                     );
                 }
@@ -229,21 +445,58 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         }
 
         /// <summary>
-        /// Battle Royale mode: Shrinking playable area over time
+        /// Spawn bots to fill remaining player slots based on game mode
+        /// Bots spawn at unused corner positions
+        /// </summary>
+        void SpawnBotsForGameMode()
+        {
+            if (m_BotPrefab == null)
+            {
+                UnityEngine.Debug.LogWarning("[9x9 Server] Bot prefab not assigned! Cannot spawn bots.");
+                return;
+            }
+
+            // Create or retrieve BotManager
+            if (m_BotManager == null)
+            {
+                var botManagerGO = new GameObject("BotManager");
+                m_BotManager = botManagerGO.AddComponent<BotManager>();
+            }
+
+            // Determine bot count based on game mode
+            int botsToSpawn = Model.CurrentGameMode switch
+            {
+                GameMode.Coop => Mathf.Max(0, m_MaxBots - NetworkManager.Singleton.ConnectedClients.Count),
+                GameMode.BattleRoyale => m_MaxBots,
+                GameMode.NewGame => Mathf.Max(1, m_MaxBots - NetworkManager.Singleton.ConnectedClients.Count),
+                _ => Mathf.Max(0, m_MaxBots - NetworkManager.Singleton.ConnectedClients.Count)
+            };
+
+            if (botsToSpawn > 0)
+            {
+                UnityEngine.Debug.Log($"[9x9 Server] Spawning {botsToSpawn} bots for {Model.CurrentGameMode} mode");
+                m_BotManager.SpawnBots(botsToSpawn);
+                Model.PlayersAlive.Value += botsToSpawn;
+            }
+        }
+
+        /// <summary>
+        /// Battle Royale mode: 10-minute countdown with shrinking safe zone
+        /// Survivors at timeout trigger end-of-match
         /// </summary>
         IEnumerator RunBattleRoyaleTimer()
         {
-            Model.MatchTimer.Value = 600; // 10 minutes
+            Model.MatchTimer.Value = 600; // 10 minutes countdown
 
             while (Model.MatchTimer.Value > 0 && !Model.MatchEnded)
             {
                 yield return CoroutinesHelper.OneSecond;
                 Model.MatchTimer.Value--;
 
-                // TODO: Implement shrinking safe zone or hazard escalation
+                // TODO: Implement shrinking safe zone or progressive hazard activation
             }
 
-            // Time's up - end match
+            // Time expired - determine winner from survivors
             if (!Model.MatchEnded)
             {
                 var survivors = NetworkManager
@@ -259,34 +512,40 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         }
 
         /// <summary>
-        /// Called when a player reaches the exit room
+        /// Called when a player reaches the exit room (center of 9x9x9 cube)
+        /// Handles different win conditions based on game mode
         /// </summary>
-        void OnPlayerReachedExit(PlayerReachedExitEvent evt)
+        void OnPlayerReachedExit(NGOPlayerReachedExitEvent evt)
         {
-            Debug.Log($"[9x9 Server] Player {evt.WinningPlayer.name} reached the exit!");
+            UnityEngine.Debug.Log($"[9x9 Server] Player {evt.Winner.name} reached the exit!");
 
             switch (Model.CurrentGameMode)
             {
                 case GameMode.Coop:
-                    // In co-op, all players must reach exit
-                    // TODO: Track which players have reached exit
-                    Debug.Log("[9x9 Server] Co-op: Player reached exit, waiting for others...");
+                    // In co-op, all players must reach exit before winning
+                    // TODO: Track which players have reached exit and trigger win when all arrive
+                    UnityEngine.Debug.Log(
+                        "[9x9 Server] Co-op: Player reached exit, waiting for others..."
+                    );
                     break;
 
                 default:
                     // First player to exit wins
-                    Broadcast(new EndMatchEvent(evt.WinningPlayer));
+                    Broadcast(new EndMatchEvent(evt.Winner));
                     break;
             }
         }
 
         /// <summary>
-        /// Called when a player dies
+        /// Called when a player dies (hazard, fall, PvP, etc.)
+        /// Decrements alive count and checks for game over condition
         /// </summary>
-        void OnPlayerDied(PlayerDiedEvent evt)
+        void OnPlayerDied(NGOPlayerDiedEvent evt)
         {
             Model.PlayersAlive.Value--;
-            Debug.Log($"[9x9 Server] Player died. {Model.PlayersAlive.Value} players remaining");
+            UnityEngine.Debug.Log(
+                $"[9x9 Server] Player died. {Model.PlayersAlive.Value} players remaining"
+            );
 
             // If all players dead, end match
             if (Model.PlayersAlive.Value <= 0)
@@ -296,20 +555,61 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         }
 
         /// <summary>
-        /// Match ended - show results
+        /// Called when all bots are eliminated in singleplayer/offline mode
+        /// Triggers player victory condition
+        /// </summary>
+        void OnAllBotsEliminated(AllBotsEliminatedEvent evt)
+        {
+            UnityEngine.Debug.Log("[9x9] All bots eliminated! Player wins!");
+
+            // Find the player and trigger victory
+            var player = Object.FindFirstObjectByType<Player>();
+            if (player != null)
+            {
+                Broadcast(new EndMatchEvent(player));
+            }
+            else
+            {
+                // Fallback: show generic victory
+                View.ShowVictory(null);
+            }
+        }
+
+        /// <summary>
+        /// Match ended - update stats, show results, and return to menu
         /// </summary>
         void OnServerMatchEnded(EndMatchEvent evt)
         {
-            Debug.Log(
+            UnityEngine.Debug.Log(
                 $"[9x9 Server] Match ended. Winner: {(evt.Winner != null ? evt.Winner.name : "None")}"
             );
             Model.MatchEnded = true;
 
-            // Update player stats
+            // Update persistent player stats (wins, kills, deaths, etc.)
             if (evt.Winner != null)
             {
-                // TODO: Increment wins, kills, etc. in PlayerProfile
-                PlayerProfileManager.UpdateStats(true, evt.Winner.Kills, evt.Winner.Deaths);
+                // TODO: Increment wins, kills, playtime, etc. in PlayerProfile system
+                try
+                {
+                    var profileMgrType =
+                        System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.PlayerProfileManager");
+                    if (profileMgrType != null)
+                    {
+                        var updateMethod = profileMgrType.GetMethod(
+                            "UpdateStats",
+                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                        if (updateMethod != null)
+                        {
+                            updateMethod.Invoke(
+                                null,
+                                new object[] { true, evt.Winner.Kills, evt.Winner.Deaths });
+                        }
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    UnityEngine.Debug.LogWarning($"Failed to update player stats: {ex.Message}");
+                }
             }
 
             // Show victory/defeat screen to all clients
@@ -323,9 +623,44 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
 
             // Return to menu after 10 seconds
-            StartCoroutine(ReturnToMenuAfterDelay(10f));
+            _ = StartCoroutine(ReturnToMenuAfterDelay(10f));
         }
 
+        /// <summary>
+        /// Select the appropriate RoomGenProfile based on current game mode
+        /// Determines seed, grid size, density, and room templates
+        /// </summary>
+        ScriptableObject GetProfileForCurrentMode()
+        {
+            switch (Model.CurrentGameMode)
+            {
+                case GameMode.NewGame:
+                    // Story mode uses deterministic seed for repeatable level design
+                    return m_StoryModeProfile;
+
+                case GameMode.Coop:
+                    return m_CoopModeProfile;
+
+                case GameMode.BattleRoyale:
+                    return m_BattleRoyaleProfile;
+
+                case GameMode.FiveByFive:
+                    return m_5x5Profile;
+
+                case GameMode.ThreeByThree:
+                    return m_3x3Profile;
+
+                default:
+                    UnityEngine.Debug.LogWarning(
+                        $"[9x9] No profile defined for mode {Model.CurrentGameMode}, using default generator settings"
+                    );
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Waits specified seconds then returns all players to main menu
+        /// </summary>
         IEnumerator ReturnToMenuAfterDelay(float delay)
         {
             yield return new WaitForSeconds(delay);

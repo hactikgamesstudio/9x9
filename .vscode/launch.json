@@ -2,9 +2,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Attach to Unity",
+            "name": "Attach to Unity Editor",
             "type": "vstuc",
-            "request": "attach"
+            "request": "attach",
+            "endPoint": "127.0.0.1:56000"
+        },
+        {
+            "name": "Attach to Unity Editor (Player)",
+            "type": "vstuc",
+            "request": "attach",
+            "endPoint": "127.0.0.1:56001"
+        },
+        {
+            "name": "Launch Unity Editor",
+            "type": "vstuc",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}",
+            "unityEditorPath": "C:\\Program Files\\Unity 6000.2.10f1\\Editor\\Unity.exe"
         }
-     ]
+    ]
 }

@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <!-- Non-functional warnings suppressed project-wide -->
+    <!-- CS0169: Field is never used -->
+    <!-- CS0649: Field never assigned (Unity serialized private fields) -->
+    <!-- CS0414: Field assigned but value never used -->
+    <!-- CS8618: Non-nullable field not initialized (Unity assigns at runtime) -->
+    <!-- CS1591: Missing XML comment (not required for game code) -->
+    <NoWarn>CS0169;CS0649;CS0414;CS8618;CS1591</NoWarn>
+  </PropertyGroup>
+</Project>

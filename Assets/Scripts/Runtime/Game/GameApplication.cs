@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Template.Multiplayer.NGO.Core;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {

@@ -78,6 +78,18 @@
     color: rgb(217, 217, 217);
 }
 
+.button:focus {
+    background-color: rgb(255, 200, 0);
+    transition-property: all;
+    transition-duration: 0.1s;
+    border-left-color: rgb(255, 220, 50);
+    border-right-color: rgb(255, 220, 50);
+    border-top-color: rgb(255, 220, 50);
+    border-bottom-color: rgb(255, 220, 50);
+    color: rgb(0, 0, 0);
+    transition-timing-function: ease;
+}
+
 .button:disabled {
     background-color: rgb(49, 107, 181);
     transition-property: all;

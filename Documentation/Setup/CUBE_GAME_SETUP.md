@@ -35,16 +35,19 @@ You now have a complete **9x9 Cube Maze escape game** system to replace the demo
    - Add Component → **CubeGameView** script
    - Add Component → **CubeGameController** script
 
-3. **Create Child Objects:**
+3. **Optional Child Objects:**
    ```
    CubeGameApplication (root)
-   ├── RoomGenerator (Empty GameObject with RoomGenerator script)
-   ├── MazeDataSynchronizer (Empty GameObject with MazeDataSynchronizer script)
-   ├── HUDCanvas (UI Toolkit Document with HUDController)
-   └── MatchRecapCanvas (UI Toolkit Document with MatchRecapView)
+   └── RoomGenerator (Empty GameObject with RoomGenerator script) - OPTIONAL
    ```
 
-### Step 2: Configure RoomGenerator
+   **Note:** The following are NOT required and will be auto-created at runtime if missing:
+   - **MazeDataSynchronizer** - Not implemented; can be added later for multiplayer sync
+   - **HUDCanvas** - Auto-created by CubeGameView if not assigned
+   - **MatchRecapCanvas** - Auto-created by CubeGameView if not assigned
+   - **RoomGenerator** - Auto-created by CubeGameController if not found in scene
+
+### Step 2: Configure RoomGenerator (Optional)
 
 On the **RoomGenerator** component:
 
@@ -60,14 +63,15 @@ On the **RoomGenerator** component:
 - **Generate All Rooms:** ❌ Unchecked (use sparse generation)
 - **Sparse Density:** 0.3 (30% of 729 = ~218 rooms)
 
-### Step 3: Assign References in CubeGameView
+### Step 3: Assign References in CubeGameView (Optional)
 
-- **HUD:** Drag HUDCanvas → HUDController component
-- **Match Recap:** Drag MatchRecapCanvas → MatchRecapView component
+- **HUD:** Leave empty (auto-creates runtime HUD)
+- **Match Recap:** Leave empty (auto-creates runtime recap screen)
 
-### Step 4: Assign References in CubeGameController
+### Step 4: Assign References in CubeGameController (Optional)
 
-- **Room Generator:** Drag the RoomGenerator GameObject
+- **Room Generator:** Leave empty (auto-creates runtime generator)
+- **Offline Player Prefab:** Leave empty (auto-creates minimal player with camera)
 
 ### Step 5: Replace GameApplication in NetworkManager
 

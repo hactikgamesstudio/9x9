@@ -1,4 +1,8 @@
 using UnityEngine;
+using Unity.Template.Multiplayer.NGO.Core;
+using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu;
+using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Matchmaker;
+using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Loading;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
@@ -7,17 +11,17 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     /// </summary>
     public class MetagameView : View<MetagameApplication>
     {
-        internal MainMenuView MainMenu => m_MainMenuView;
+        public MainMenuView MainMenu => m_MainMenuView;
 
         [SerializeField]
         MainMenuView m_MainMenuView;
 
-        internal MatchmakerView Matchmaker => m_MatchmakerView;
+        public MatchmakerView Matchmaker => m_MatchmakerView;
 
         [SerializeField]
         MatchmakerView m_MatchmakerView;
 
-        internal LoadingScreenView LoadingScreen => m_LoadingScreenView;
+        public LoadingScreenView LoadingScreen => m_LoadingScreenView;
 
         [SerializeField]
         LoadingScreenView m_LoadingScreenView;

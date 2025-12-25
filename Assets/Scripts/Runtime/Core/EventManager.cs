@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
 
-namespace Unity.Template.Multiplayer.NGO.Runtime
+namespace Unity.Template.Multiplayer.NGO.Core
 {
-    internal class AppEvent { }
+    public class AppEvent { }
 
     /// <summary>
     /// A simple Event System that can be used for remote systems communication
     /// </summary>
-    internal class EventManager
+    public class EventManager
     {
         readonly Dictionary<Type, Action<AppEvent>> m_Events = new Dictionary<Type, Action<AppEvent>>();
         readonly Dictionary<Delegate, Action<AppEvent>> m_EventLookups = new Dictionary<Delegate, Action<AppEvent>>();
 
-        internal void AddListener<T>(Action<T> evt) where T : AppEvent
+        public void AddListener<T>(Action<T> evt) where T : AppEvent
         {
             if (m_EventLookups.ContainsKey(evt))
             { 
@@ -33,7 +33,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
         }
 
-        internal void RemoveListener<T>(Action<T> evt) where T : AppEvent
+        public void RemoveListener<T>(Action<T> evt) where T : AppEvent
         {
             if (!m_EventLookups.TryGetValue(evt, out var action))
             {
@@ -56,7 +56,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             m_EventLookups.Remove(evt);
         }
 
-        internal void Broadcast(AppEvent evt)
+        public void Broadcast(AppEvent evt)
         {
             if (m_Events.TryGetValue(evt.GetType(), out var action))
             {
@@ -64,7 +64,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
         }
 
-        internal void Clear()
+        public void Clear()
         {
             m_Events.Clear();
             m_EventLookups.Clear();

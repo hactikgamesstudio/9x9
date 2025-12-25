@@ -118,13 +118,29 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     m_DoorObject.localPosition = targetPos;
                     m_IsMoving = false;
                     
-                    // Trigger room rotation if door just closed
+                    // Optional: invoke RoomGenerator.OnRoomExited via reflection (avoids hard dependency)
                     if (!m_IsOpen && m_RotateRoomOnClose && m_ParentRoomData != null)
                     {
-                        RoomGenerator generator = Object.FindFirstObjectByType<RoomGenerator>();
-                        if (generator != null)
+                        var genType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.RoomGenerator, com.unity.template.multiplayer-ngo.runtime");
+                        if (genType != null)
                         {
-                            generator.OnRoomExited(m_ParentRoomData.GridPosition);
+                            // Use modern API: FindObjectsByType with no sorting for performance
+                            var generators = Object.FindObjectsByType(genType, FindObjectsSortMode.None);
+                            if (generators != null && generators.Length > 0)
+                            {
+                                var onExit = genType.GetMethod("OnRoomExited");
+                                if (onExit != null)
+                                {
+                                    try
+                                    {
+                                        onExit.Invoke(generators[0], new object[] { m_ParentRoomData.GridPosition });
+                                    }
+                                    catch (System.Exception ex)
+                                    {
+                                        Debug.LogWarning($"DoorController: OnRoomExited failed: {ex.Message}");
+                                    }
+                                }
+                            }
                         }
                     }
                 }

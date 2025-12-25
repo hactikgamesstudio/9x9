@@ -1,3 +1,5 @@
+using Unity.Template.Multiplayer.NGO.Core;
+
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
     internal class EnterMatchmakerQueueEvent : AppEvent
@@ -10,30 +12,22 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         }
     }
 
-    internal class StartSinglePlayerModeEvent : AppEvent 
-    { 
+    internal class StartSinglePlayerModeEvent : AppEvent
+    {
         public GameMode GameMode { get; set; } = GameMode.NewGame;
+        public int BotCount { get; set; } = 3; // Default to 3 bots
     }
 
     /// <summary>
     /// Called to stop the matchmaker
     /// </summary>
     internal class ExitMatchmakerQueueEvent : AppEvent { }
+
     /// <summary>
     /// Called after the matchmaking stops
     /// </summary>
     internal class ExitedMatchmakerQueueEvent : AppEvent { }
-    internal class MatchLoadingEvent : AppEvent { }
-    internal class ExitMatchLoadingEvent : AppEvent { }
-    internal class PlayerSignedIn : AppEvent
-    {
-        public bool Success { get; private set; }
-        public string PlayerId { get; private set; }
 
-        public PlayerSignedIn(bool success, string playerId)
-        {
-            Success = success;
-            PlayerId = playerId;
-        }
-    }
+    // Use canonical definitions from Shared/GameEvents.cs for
+    // MatchLoadingEvent, ExitMatchLoadingEvent, and PlayerSignedIn.
 }

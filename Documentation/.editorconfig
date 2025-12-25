@@ -1,0 +1,29 @@
+# EditorConfig for Documentation folder
+# Disables formatting and style rules for documentation files
+
+root = true
+
+# Markdown files - disable all formatting
+[*.md]
+# Disable all style rules
+dotnet_analyzer_diagnostic.severity = none
+# Disable formatting
+indent_size = unset
+indent_style = unset
+max_line_length = unset
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+# Disable specific analyzers that might flag markdown content
+dotnet_diagnostic.IDE0001.severity = none  # Simplify name
+dotnet_diagnostic.IDE0002.severity = none  # Simplify member access
+dotnet_diagnostic.IDE0003.severity = none  # Name can be simplified
+dotnet_diagnostic.IDE0004.severity = none  # Remove unnecessary cast
+dotnet_diagnostic.IDE0005.severity = none  # Remove unnecessary import
+dotnet_diagnostic.IDE0055.severity = none  # Fix formatting
+dotnet_diagnostic.IDE0058.severity = none  # Expression value is never used
+dotnet_diagnostic.IDE0290.severity = none  # Use primary constructor
+
+# Disable all code style analyzers
+dotnet_diagnostic.CS.severity = none
+dotnet_diagnostic.IDE.severity = none

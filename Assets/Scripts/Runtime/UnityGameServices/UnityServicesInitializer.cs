@@ -16,6 +16,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         public MatchmakerTicketer Matchmaker { get; private set; }
 
         public const string k_Environment = "production";
+
         public void Awake()
         {
             if (Instance && Instance != this)
@@ -34,12 +35,14 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         async void OnConfigurationLoaded(ConfigurationManager configuration)
         {
-            Debug.Log($"Configuration loaded: {configuration}");
-            await Initialize(configuration.GetMultiplayerRole() == Unity.Multiplayer.MultiplayerRoleFlags.Server ? k_ServerID
-                                                                                                                 : string.Empty);
+            UnityEngine.Debug.Log($"Configuration loaded: {configuration}");
+            await Initialize(
+                configuration.GetMultiplayerRole() == Unity.Multiplayer.MultiplayerRoleFlags.Server
+                    ? k_ServerID
+                    : string.Empty);
         }
 
-        async public Task Initialize(string externalPlayerID)
+        public async Task Initialize(string externalPlayerID)
         {
             string serviceProfileName = "default"; //note: by using "default" UGS automatically assign a different Profile name to every MPPM virtual player.
 #if UNITY_EDITOR && HAS_PARRELSYNC
@@ -53,9 +56,12 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 UnityServices.ExternalUserId = externalPlayerID;
             }
 
-            Debug.Log($"Initializing services with externalPlayerID: {externalPlayerID}");
-            bool signedIn = await UnityServiceAuthenticator.TrySignInAsync(k_Environment, serviceProfileName);
-            MetagameApplication.Instance.Broadcast(new PlayerSignedIn(signedIn, UnityServiceAuthenticator.PlayerId));
+            UnityEngine.Debug.Log($"Initializing services with externalPlayerID: {externalPlayerID}");
+            bool signedIn = await UnityServiceAuthenticator.TrySignInAsync(
+                k_Environment,
+                serviceProfileName);
+            MetagameApplication.Instance.Broadcast(
+                new PlayerSignedIn(signedIn, UnityServiceAuthenticator.PlayerId));
             if (!signedIn)
             {
                 return;

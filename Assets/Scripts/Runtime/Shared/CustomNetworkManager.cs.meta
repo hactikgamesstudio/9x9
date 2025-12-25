@@ -3,7 +3,9 @@ guid: bb0d00731f0d1ac459d723c7b42ff18d
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - m_GameAppPrefab: {fileID: 8151717977737709010, guid: 2e9b43889df38984ba4888499cf219bc, type: 3}
+  - m_BotPrefab: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -25,19 +25,19 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         void OnClientMatchCountdownChanged(uint previousValue, uint newValue)
         {
-            GameApplication.Instance.Broadcast(new CountdownChangedEvent(newValue));
+            GameApplication.Instance.Broadcast(new CountdownChangedEvent((int)newValue));
         }
 
         void OnClientMatchEndedChanged(bool previousValue, bool newValue)
         {
             //you can block inputs here, play animations and so on
-            Debug.Log($"New match ended value: {newValue}");
+            UnityEngine.Debug.Log($"New match ended value: {newValue}");
         }
 
         void OnClientMatchStartedChanged(bool previousValue, bool newValue)
         {
             //you can enable inputs here, play animations and so on
-            Debug.Log($"New match started value: {newValue}");
+            UnityEngine.Debug.Log($"New match started value: {newValue}");
         }
 
         [ClientRpc]

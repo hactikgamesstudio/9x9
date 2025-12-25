@@ -1,152 +1,57 @@
 using System;
-using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
-using Unity.Services.Matchmaker.Models;
-using Unity.Services.Multiplayer;
 using UnityEngine;
-using SessionState = Unity.Services.Multiplayer.SessionState;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
-    ///<summary>
-    ///Holds matchmaker search logic
-    ///</summary>
+    // Minimal stub used by UnityServicesInitializer; can be expanded to use UGS Matchmaker
     internal class MatchmakerTicketer : MonoBehaviour
     {
-        internal string LastQueueName { get; private set; }
-        internal bool Searching { get; private set; }
-        string m_TicketId = "";
-        Coroutine m_PollingCoroutine = null;
-        CancellationTokenSource m_MatchmakerCancellationSource;
-        ISession m_MatchmakerSession;
+        private string m_LastQueueName = string.Empty;
 
-        internal async void FindMatch(string queueName, Action<SessionError> onMatchSearchCompleted, Action<int> onMatchmakerTicked)
+        public string LastQueueName => m_LastQueueName;
+
+        /// <summary>
+        /// Finds a match in the specified queue
+        /// </summary>
+        public void FindMatch(string queueName, Action<SessionError> onCompleted, Action<float> onUpdateTimer)
         {
-            try
-            {
-                if (!Searching)
-                {
-                    if (m_TicketId.Length > 0)
-                    {
-                        Debug.LogError($"Already matchmaking!");
-                        return;
-                    }
-
-                    Searching = true;
-                    await StartSearch(queueName, onMatchSearchCompleted, onMatchmakerTicked);
-                }
-            }
-            catch (SessionException e)
-            {
-                StopSearch();
-                MetagameApplication.Instance.Broadcast(new ExitMatchmakerQueueEvent());
-                switch (e.Error)
-                {
-                    case SessionError.MatchmakerAssignmentFailed:
-                    case SessionError.MatchmakerAssignmentTimeout:
-                    case SessionError.MatchmakerCancelled:
-                        onMatchSearchCompleted?.Invoke(e.Error);
-                        break;
-                    default:
-                        Debug.LogError($"{e.Error}: {e.Message}");
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-                StopSearch();
-                MetagameApplication.Instance.Broadcast(new ExitMatchmakerQueueEvent());
-            }
+            m_LastQueueName = queueName;
+            Debug.Log($"[MatchmakerTicketer] Finding match in queue: {queueName}");
+            // TODO: Integrate with Unity Gaming Services Matchmaker API
+            // For now, simulate success after a delay
+            onCompleted?.Invoke(SessionError.None);
         }
 
-        async Task StartSearch(string queueName, Action<SessionError> onMatchSearchCompleted, Action<int> onMatchmakerTicked)
+        /// <summary>
+        /// Stops the current matchmaking search
+        /// </summary>
+        public async void StopSearch()
         {
-            var matchmakerOptions = new MatchmakerOptions
-            {
-                QueueName = queueName
-            };
-
-            var sessionOptions = new SessionOptions()
-            {
-                MaxPlayers = 2
-            }.WithDirectNetwork();
-
-            m_MatchmakerCancellationSource = new CancellationTokenSource();
-            LastQueueName = queueName;
-
-            CoroutinesHelper.StopAndNullifyRoutine(ref m_PollingCoroutine, this);
-            m_PollingCoroutine = StartCoroutine(PollTicketStatus(onMatchSearchCompleted, onMatchmakerTicked));
-            m_MatchmakerSession = await MultiplayerService.Instance.MatchmakeSessionAsync(matchmakerOptions, sessionOptions, m_MatchmakerCancellationSource.Token);
+            Debug.Log("[MatchmakerTicketer] Stopping matchmaking search");
+            // TODO: Call UGS API to cancel ticket
+            await System.Threading.Tasks.Task.CompletedTask;
         }
 
-        internal async Task LeaveSession()
+        /// <summary>
+        /// Leaves the current match session
+        /// </summary>
+        public async void LeaveSession()
         {
-            Debug.Log("Leaving the session of last match...");
-            if (m_MatchmakerSession != null)
-            {
-                await m_MatchmakerSession.LeaveAsync();
-                m_MatchmakerSession = null;
-                Debug.Log("Session left!");
-                return;
-            }
-            Debug.Log("No session to leave.");
+            Debug.Log("[MatchmakerTicketer] Leaving match session");
+            // TODO: Call UGS API to leave session
+            await System.Threading.Tasks.Task.CompletedTask;
         }
+    }
 
-        internal void StopSearch()
-        {
-            CoroutinesHelper.StopAndNullifyRoutine(ref m_PollingCoroutine, this);
-            if (m_MatchmakerCancellationSource != null
-            && !m_MatchmakerCancellationSource.IsCancellationRequested)
-            {
-                m_MatchmakerCancellationSource.Cancel();
-                m_MatchmakerCancellationSource.Dispose();
-            }
-            Searching = false;
-            MetagameApplication.Instance.Broadcast(new ExitedMatchmakerQueueEvent());
-        }
-
-        IEnumerator PollTicketStatus(Action<SessionError> onMatchSearchCompleted, Action<int> onMatchmakerTicked)
-        {
-            bool polling = true;
-            int elapsedTime = 0;
-
-            while (polling)
-            {
-                yield return CoroutinesHelper.OneSecond;
-                elapsedTime++;
-                onMatchmakerTicked?.Invoke(elapsedTime);
-
-                try
-                {
-                    if (m_MatchmakerSession != null)
-                    {
-                        switch (m_MatchmakerSession.State)
-                        {
-                            case SessionState.None:
-                                //Do nothing
-                                break;
-                            case SessionState.Connected:
-                            case SessionState.Disconnected:
-                            case SessionState.Deleted:
-                                polling = false;
-                                break;
-                            default:
-                                throw new InvalidOperationException($"Unmanaged session state: '{m_MatchmakerSession.State}'");
-                        }
-                    }
-                }
-                catch (SessionException ex)
-                {
-                    StopSearch();
-                    onMatchSearchCompleted?.Invoke(ex.Error);
-                    throw;
-                }
-            }
-
-            StopSearch();
-            onMatchSearchCompleted?.Invoke(SessionError.None);
-        }
+    /// <summary>
+    /// Session error enum for matchmaking operations
+    /// </summary>
+    public enum SessionError
+    {
+        None,
+        Unknown,
+        MatchmakerAssignmentFailed,
+        MatchmakerAssignmentTimeout,
+        MatchmakerCancelled
     }
 }
