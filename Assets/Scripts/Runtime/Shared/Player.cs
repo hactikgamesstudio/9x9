@@ -27,10 +27,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             {
                 return;
             }
-            if (MetagameApplication.Instance)
-            {
-                MetagameApplication.Instance.Broadcast(new MatchEnteredEvent());
-            }
+            // Note: MetagameApplication check removed - handled by CustomNetworkManager instead
             UnityEngine.Debug.Log("[Local client] Preparing game [Showing loading screen]");
             if (!IsServer) //the server already does this before asking clients to do the same
             {
@@ -56,11 +53,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         internal void OnClientStartGameClientRpc()
         {
             if (!IsLocalPlayer) { return; }
-            var app = CustomNetworkManager.Singleton?.CurrentGameApp;
-            if (app != null)
-            {
-                app.Broadcast(new StartMatchEvent(false, true));
-            }
+            // Start event is now broadcasted by CustomNetworkManager directly
+            UnityEngine.Debug.Log("[Local client] Game starting");
         }
 
         [ServerRpc]
@@ -71,11 +65,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         internal void OnServerPlayerAskedToWin()
         {
-            var app = CustomNetworkManager.Singleton?.CurrentGameApp;
-            if (app != null)
-            {
-                app.Broadcast(new EndMatchEvent(this));
-            }
+            // Notify CustomNetworkManager to broadcast win event with player's OwnerClientId
+            CustomNetworkManager.Singleton?.BroadcastPlayerWin(OwnerClientId);
         }
     }
 }

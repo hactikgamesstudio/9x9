@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Template.Multiplayer.NGO.Runtime;
+using Unity.Template.Multiplayer.NGO.Runtime.UI.Shared;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
 {
@@ -25,6 +27,18 @@ namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
     protected override void Start()
     {
         base.Start();
+        if (startGameButton == null)
+        {
+            Debug.LogError("[NewGamePanel] startGameButton is NOT assigned. Assign it in the Inspector.");
+        }
+        if (botCountDropdown == null)
+        {
+            Debug.LogError("[NewGamePanel] botCountDropdown is NOT assigned. Assign it in the Inspector.");
+        }
+        if (difficultyDropdown == null)
+        {
+            Debug.LogError("[NewGamePanel] difficultyDropdown is NOT assigned. Assign it in the Inspector.");
+        }
         InitializeBotCountDropdown();
         InitializeDifficultyDropdown();
         SetupButtonListeners();
@@ -63,7 +77,11 @@ namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
 
     private void SetupButtonListeners()
     {
-        startGameButton.onClick.AddListener(OnStartGameClicked);
+        if (startGameButton != null)
+        {
+            startGameButton.onClick.AddListener(OnStartGameClicked);
+            Debug.Log("[NewGamePanel] Start Game button listener attached");
+        }
     }
 
     private void OnBotCountChanged(int index)
@@ -97,7 +115,13 @@ namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
             BotCount = selectedBotCount
         };
 
-        MetagameApplication.Instance.Broadcast(startEvent);
+        var app = MetagameApplication.Instance;
+        if (app == null)
+        {
+            Debug.LogError("[NewGamePanel] MetagameApplication.Instance is NULL. Ensure a MetagameApplication exists in MetagameScene.");
+            return;
+        }
+        app.Broadcast(startEvent);
 
         Debug.Log($"Broadcasted StartSinglePlayerModeEvent with BotCount: {selectedBotCount}");
     }

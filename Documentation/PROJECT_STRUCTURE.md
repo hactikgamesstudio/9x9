@@ -3,6 +3,23 @@
 ## Overview
 This document describes the reorganized project structure for the 9x9 Cube Maze Game. The structure has been simplified to separate core game logic from templates, networking, and metagame systems.
 
+**Updated:** December 25, 2025 — Assembly architecture refined with no-shim setup (Burst 1.8.27).
+
+## Assembly Boundaries
+
+The project uses a clean asmdef-based architecture to prevent cycles and maintain clear dependencies:
+
+| Assembly | Purpose | Dependencies |
+|----------|---------|--------------|
+| **Core** | Shared contracts, enums, interfaces | None |
+| **Shared** | Utilities, systems (inventory, procedural) | Core |
+| **Game** | Gameplay logic, player, hazards, rooms | Core, Shared |
+| **Metagame** | Menu flow, application state | Core, Shared |
+| **UI** | UI panels, controllers, menus | Core, Shared, Game, Metagame, UnityGameServices |
+| **UnityGameServices** | UGS integration (matchmaker, auth) | Core, Shared, Metagame |
+
+**Key Pattern:** Cross-assembly calls use interfaces defined in Core (e.g., `IMenuManager`); implementation details stay private to their assembly.
+
 ## Directory Structure
 
 ### `/Assets/Game/` - Core Gameplay

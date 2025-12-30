@@ -10,7 +10,7 @@ Transform the 9x9 Cube Maze Game into a complete multiplayer survival puzzle exp
 
 ---
 
-## Current Status (November 18, 2025)
+## Current Status (December 25, 2025)
 
 ### ✅ Completed Features
 
@@ -30,22 +30,26 @@ Transform the 9x9 Cube Maze Game into a complete multiplayer survival puzzle exp
 - Network manager and connection approval
 - Dedicated server build support
 
+**Assembly Architecture (NEW):**
+- ✅ Clean asmdef-based structure (Core, Shared, Game, Metagame, UI, UnityGameServices)
+- ✅ Interface-based cross-assembly communication (IMenuManager pattern)
+- ✅ Zero Burst resolver errors (Burst 1.8.27, no-shim setup)
+- ✅ Editor validator for default assemblies
+- ✅ GitHub Actions CI/CD pipeline (batchmode compile on PR)
+
 **Project Infrastructure:**
 - Git repository initialized
-- Organized folder structure (Game/Core/Bots)
-- Assembly definitions (Game, Core, Bots)
-- Comprehensive documentation
+- Organized folder structure per assemblies
+- Assembly definitions with clean dependencies
+- Comprehensive documentation (updated Dec 25)
+- CI/CD workflow: `.github/workflows/unity-ci-compile.yml`
 
-**Singleplayer Features (NEW):**
+**Singleplayer Features:**
 - Bot AI controller with movement, combat, pathfinding
 - Bot manager for spawning and lifecycle
 - 8-corner spawn system matching multiplayer
 
 ### 🚧 In Progress
-
-- Singleplayer mode implementation
-- Bot system integration with game controllers
-- Unity project compilation testing (reorganization)
 
 ### ❌ Not Started
 

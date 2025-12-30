@@ -2,8 +2,10 @@
 
 ## Project Information
 **Unity Version**: 6000.2.10f1  
+**Burst Version**: 1.8.27 (no-shim, clean)  
 **Netcode Version**: 2.3.2  
-**Last Updated**: November 13, 2025
+**Last Updated**: December 25, 2025  
+**Status**: ✅ All compilation errors cleared, assembly architecture stable
 
 ---
 

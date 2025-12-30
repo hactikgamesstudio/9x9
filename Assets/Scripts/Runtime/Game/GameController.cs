@@ -26,7 +26,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             RemoveListeners();
         }
 
-        internal override void RemoveListeners()
+        protected override void RemoveListeners()
         {
             RemoveListener<StartMatchEvent>(OnServerStartMatch);
             RemoveListener<EndMatchEvent>(OnServerMatchEnded);
@@ -45,9 +45,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 NetworkClient firstClientStillConnected = NetworkManager.Singleton.ConnectedClients.Where(cc => cc.Key != evt.ClientId)
                                                                                                    .Select(v => v.Value)
                                                                                                    .FirstOrDefault();
-                Player winner = firstClientStillConnected == null ? null
-                                                                  : firstClientStillConnected.PlayerObject.GetComponent<Player>();
-                Broadcast(new EndMatchEvent(winner));
+                ulong? winnerClientId = firstClientStillConnected == null ? null : firstClientStillConnected.ClientId;
+                Broadcast(new EndMatchEvent(winnerClientId));
             }
         }
 
@@ -108,9 +107,9 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
 
             ulong winnerClientId = ulong.MaxValue;
-            if (evt.Winner != null)
+            if (evt.WinnerClientId.HasValue)
             {
-                winnerClientId = evt.Winner.OwnerClientId;
+                winnerClientId = evt.WinnerClientId.Value;
             }
             Model.matchDataSynchronizer.OnClientMatchResultComputedClientRpc(winnerClientId);
             if (App.IsDedicatedServer)

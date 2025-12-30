@@ -8,7 +8,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     /// </summary>
     public class GameApplication : BaseApplication<GameModel, GameView, GameController>
     {
-        internal static new GameApplication Instance { get; private set; }
+        internal static GameApplication Instance { get; private set; }
 
         internal bool IsDedicatedServer =>
             NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient;

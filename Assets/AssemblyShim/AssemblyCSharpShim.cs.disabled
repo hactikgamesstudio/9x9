@@ -1,0 +1,14 @@
+// Shim disabled. If Burst (1.8.27+) works without default assemblies,
+// keep this file disabled. To restore the shim, rename to AssemblyCSharpShim.cs
+// with the content below:
+//
+// using UnityEngine;
+//
+// namespace Unity.Template.Multiplayer.NGO
+// {
+//     internal static class AssemblyCSharpShim
+//     {
+//         [RuntimeInitializeOnLoadMethod]
+//         private static void Touch() { }
+//     }
+// }

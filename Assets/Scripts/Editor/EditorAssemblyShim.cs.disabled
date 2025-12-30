@@ -1,0 +1,16 @@
+// Shim disabled. If Burst (1.8.27+) works without editor default assemblies,
+// keep this file disabled. To restore, rename to EditorAssemblyShim.cs
+// with the content below:
+//
+// #if UNITY_EDITOR
+// using UnityEditor;
+//
+// namespace Unity.Template.Multiplayer.NGO.Editor
+// {
+//     internal static class EditorAssemblyShim
+//     {
+//         [InitializeOnLoadMethod]
+//         private static void Touch() { }
+//     }
+// }
+// #endif

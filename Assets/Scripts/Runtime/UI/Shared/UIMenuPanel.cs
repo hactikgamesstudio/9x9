@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Shared
 {

@@ -20,10 +20,10 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         protected override void OnTriggerEnter(Collider other)
         {
             m_BodiesInArea.Add(other);
-            
+
             // Strong knockback immediately
             ApplyKnockback(other);
-            
+
             // Immediate damage
             DamageTarget(other);
             m_LastDamageTime = Time.time;
@@ -37,7 +37,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 DamageTarget(other);
                 m_LastDamageTime = Time.time;
             }
-            
+
             // Keep knockback active to push out of lava
             if (Time.time % 0.2f < Time.deltaTime)  // Every 0.2 seconds
             {

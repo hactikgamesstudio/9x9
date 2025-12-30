@@ -6,6 +6,8 @@ using Unity.Services.Multiplayer;
 using UnityEngine;
 using static Unity.Services.Matchmaker.Models.MultiplayAssignment;
 using Unity.Template.Multiplayer.NGO.Core;
+using Unity.Template.Multiplayer.NGO.Runtime;
+using Unity.Template.Multiplayer.NGO.Runtime.Metagame.Views;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Matchmaker
 {
@@ -35,7 +37,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Matchmaker
             StopMatchmaker();
         }
 
-        internal override void RemoveListeners()
+        protected override void RemoveListeners()
         {
             RemoveListener<EnterMatchmakerQueueEvent>(OnEnterMatchmakerQueue);
             RemoveListener<ExitMatchmakerQueueEvent>(OnExitMatchmakerQueue);

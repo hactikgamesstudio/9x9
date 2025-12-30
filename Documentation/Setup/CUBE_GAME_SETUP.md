@@ -82,28 +82,25 @@ On the **RoomGenerator** component:
 
 ---
 
-##  Compilation Fixes Needed
+## Project Stability & Build Status
 
-Run these fixes to make it compile:
+### ✅ Current Compilation State
+- **Status:** Clean — no errors or Burst resolver issues.
+- **Burst Version:** 1.8.27 (compatible with Unity 6000.2.10f1).
+- **Assembly Setup:** No-shim (Burst 1.8.27 handles asmdef-only projects cleanly).
+- **Default Assemblies:** Kept empty via validator at `Assets/Scripts/Editor/ValidateDefaultAssemblies.cs`.
 
-### Fix 1: Add missing using statement
-```csharp
-// In CubeGameApplication.cs line 1, add:
-using UnityEngine;
-```
-
-### Fix 2: Fix method names in CubeGameController.cs
-Replace these lines:
-- Line 98: `m_RoomGenerator.GenerateCubeGrid();` → `m_RoomGenerator.GenerateGrid();`
-- Line 230+: `evt.WinningPlayer` → `evt.Winner` (multiple occurrences)
-
-### Fix 3: Add method to MatchRecapView.cs (if missing)
-```csharp
-public void SetWinner(Player winner)
-{
-    // Display winner's name or "No Winner"
-}
-```
+### Key Architectural Patterns
+1. **Interfaces over Reflection:** Cross-assembly calls use Core contracts (e.g., `IMenuManager`) to avoid cycles.
+   - Example: `MainMenuView` implements `IMenuManager` in UI; `Metagame` consumes it via interface.
+2. **Controlled Visibility:** Only methods necessary for cross-assembly use are public (e.g., `MatchmakerView.UpdateTimer()`).
+3. **Assembly Boundaries:**
+   - `Core`: Shared contracts and enums.
+   - `Shared`: Utilities and systems (inventory, procedural generation).
+   - `Game`: Gameplay logic.
+   - `Metagame`: Menu and flow.
+   - `UI`: UI panels and controllers.
+   - `UnityGameServices`: UGS integration.
 
 ---
 
@@ -181,6 +178,18 @@ Player hits hazard → OnPlayerDied() event
 5. **Move** using WASD + Mouse (FirstPersonController)
 6. **Find the exit** at center (4,4,4) or die trying
 
+### Ensuring Stability While Developing
+- Keep production code inside asmdefs; avoid editing shim files (currently disabled in `.disabled` state).
+- When adding cross-assembly features, define contracts in Core; implement in respective assemblies.
+- Use reflection sparingly; prefer typed interfaces.
+- Run CI before pushing: confirm `.github/workflows/unity-ci-compile.yml` passes on your PR.
+- If you see a new Burst error, check `Assets/Scripts/Editor/ValidateDefaultAssemblies.cs` or restore shims (see `Assets/AssemblyShim/README.md`).
+
+### CI/CD Pipeline
+- **Workflow:** `.github/workflows/unity-ci-compile.yml` runs batchmode compile on PRs to `Ground` and `feature/**` branches.
+- **Required Secret:** Add `UNITY_LICENSE` to GitHub → Settings → Secrets and variables → Actions.
+- **See:** `.github/README-Unity-CI.md` for setup details.
+
 ---
 
 ## Next Steps
@@ -231,5 +240,18 @@ The old GameApplication is still there if you want to reference it or use it for
 
 ---
 
+## Known Good Configuration
+
+| Component | Version/Status | Notes |
+|-----------|----------------|-------|
+| Unity | 6000.2.10f1 | Stable |
+| Netcode for GameObjects | 2.3.2 | — |
+| Burst | 1.8.27 | Resolves asmdefs cleanly |
+| TextMeshPro | 3.8.x | ✅ Included |
+| Input System | 1.14.2 | — |
+| Default Assemblies | Disabled | No shims needed with Burst 1.8.27 |
+| CI/CD | GitHub Actions | Runs batchmode compile on PR |
+
 Created: November 17, 2025  
+Updated: December 25, 2025  
 For: 9x9 Unity Cube Maze Escape Game

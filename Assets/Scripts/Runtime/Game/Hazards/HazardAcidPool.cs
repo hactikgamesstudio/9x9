@@ -21,10 +21,10 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         protected override void OnTriggerEnter(Collider other)
         {
             m_BodiesInArea.Add(other);
-            
+
             // Apply initial knockback away from hazard
             ApplyKnockback(other);
-            
+
             // Immediate damage on entry
             DamageTarget(other);
             m_LastDamageTime = Time.time;

@@ -60,7 +60,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
         void Awake()
         {
-            MazeDataSynchronizer = Object.FindFirstObjectByType<MazeDataSynchronizer>();
+            MazeDataSynchronizer = FindObjectOfType<MazeDataSynchronizer>();
             if (MazeDataSynchronizer == null)
             {
                 UnityEngine.Debug.LogWarning(

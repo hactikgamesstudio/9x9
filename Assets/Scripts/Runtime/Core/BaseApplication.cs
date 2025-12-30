@@ -79,7 +79,7 @@ namespace Unity.Template.Multiplayer.NGO.Core
         /// Notifies an event to the component's of the app
         /// </summary>
         /// <param name="evt"></param>
-        new internal void Broadcast(AppEvent evt)
+        public void Broadcast(AppEvent evt)
         {
             EventManager.Broadcast(evt);
         }

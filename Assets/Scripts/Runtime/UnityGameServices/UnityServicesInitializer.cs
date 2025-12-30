@@ -9,7 +9,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     ///<summary>
     ///Initializes all the Unity Services managers
     ///</summary>
-    internal class UnityServicesInitializer : MonoBehaviour
+    public class UnityServicesInitializer : MonoBehaviour
     {
         public const string k_ServerID = "SERVER";
         public static UnityServicesInitializer Instance { get; private set; }

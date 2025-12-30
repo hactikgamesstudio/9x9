@@ -41,7 +41,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         // Health state
         private int m_CurrentHealth;
         public event Action<int> HealthChanged;
-        
+
         // AI state
         private Player m_Player;
         private CharacterController m_CharacterController;
@@ -65,7 +65,9 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 Debug.LogError($"[BotController] {gameObject.name} missing Player component!");
 
             if (m_CharacterController == null)
-                Debug.LogError($"[BotController] {gameObject.name} missing CharacterController component!");
+                Debug.LogError(
+                    $"[BotController] {gameObject.name} missing CharacterController component!"
+                );
         }
 
         void Start()
@@ -73,7 +75,6 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             // Initialize bot name in gameobject
             gameObject.name = m_BotName;
             m_CurrentHealth = m_MaxHealth;
-
         }
 
         void Update()
@@ -158,7 +159,11 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             if (moveDirection.magnitude > 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, m_RotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.Lerp(
+                    transform.rotation,
+                    targetRotation,
+                    m_RotationSpeed * Time.deltaTime
+                );
             }
         }
 
@@ -175,7 +180,11 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                 m_Velocity.z = directionToTarget.z * m_MovementSpeed;
 
                 Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, m_RotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.Lerp(
+                    transform.rotation,
+                    targetRotation,
+                    m_RotationSpeed * Time.deltaTime
+                );
             }
         }
 
@@ -202,7 +211,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         /// </summary>
         public void TakeDamage(int amount)
         {
-            if (IsDead) return;
+            if (IsDead)
+                return;
 
             m_CurrentHealth = Mathf.Max(0, m_CurrentHealth - amount);
             HealthChanged?.Invoke(m_CurrentHealth);
@@ -220,7 +230,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         /// </summary>
         public void Heal(int amount)
         {
-            if (IsDead) return;
+            if (IsDead)
+                return;
 
             m_CurrentHealth = Mathf.Min(m_MaxHealth, m_CurrentHealth + amount);
             HealthChanged?.Invoke(m_CurrentHealth);
@@ -269,6 +280,6 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         ChasingPlayer,
         Combat,
         SolvingPuzzle,
-        CollectingItem
+        CollectingItem,
     }
 }

@@ -3,7 +3,9 @@
     "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
     "references": [
         "Unity.Template.Multiplayer.NGO.Runtime.Core",
+        "Unity.Template.Multiplayer.NGO.Runtime.Shared",
         "Unity.Netcode.GameObjects",
+        "Unity.Netcode.Runtime",
         "Unity.InputSystem",
         "Unity.Collections"
     ],

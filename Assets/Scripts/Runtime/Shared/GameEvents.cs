@@ -42,14 +42,14 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
     public class PlayerDiedEvent : AppEvent
     {
-        public Player Player { get; }
-        public PlayerDiedEvent(Player player) { Player = player; }
+        public ulong DeadClientId { get; }
+        public PlayerDiedEvent(ulong deadClientId) { DeadClientId = deadClientId; }
     }
 
     public class PlayerReachedExitEvent : AppEvent
     {
-        public Player Winner { get; }
-        public PlayerReachedExitEvent(Player winner) { Winner = winner; }
+        public ulong WinnerClientId { get; }
+        public PlayerReachedExitEvent(ulong winnerClientId) { WinnerClientId = winnerClientId; }
     }
 
     public class PlayerSignedIn : AppEvent
@@ -65,8 +65,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
     public class EndMatchEvent : AppEvent
     {
-        public Player Winner { get; }
-        public EndMatchEvent(Player winner) { Winner = winner; }
+        public ulong? WinnerClientId { get; }
+        public EndMatchEvent(ulong? winnerClientId) { WinnerClientId = winnerClientId; }
     }
 
     public class CountdownChangedEvent : AppEvent

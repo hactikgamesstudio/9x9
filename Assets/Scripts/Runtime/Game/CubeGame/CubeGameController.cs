@@ -182,7 +182,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
         }
 
-        internal override void RemoveListeners()
+        protected override void RemoveListeners()
         {
             // Unsubscribe from all events registered in Awake
             RemoveListener<StartMatchEvent>(OnServerStartMatch);
@@ -506,8 +506,8 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     .Where(p => p != null && p.IsAlive)
                     .ToList();
 
-                Player winner = survivors.Count > 0 ? survivors.First() : null;
-                Broadcast(new EndMatchEvent(winner));
+                ulong? winnerClientId = survivors.Count > 0 ? survivors.First().OwnerClientId : null;
+                Broadcast(new EndMatchEvent(winnerClientId));
             }
         }
 
@@ -517,7 +517,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         /// </summary>
         void OnPlayerReachedExit(NGOPlayerReachedExitEvent evt)
         {
-            UnityEngine.Debug.Log($"[9x9 Server] Player {evt.Winner.name} reached the exit!");
+            UnityEngine.Debug.Log($"[9x9 Server] Player reached the exit!");
 
             switch (Model.CurrentGameMode)
             {
@@ -531,7 +531,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
                 default:
                     // First player to exit wins
-                    Broadcast(new EndMatchEvent(evt.Winner));
+                    Broadcast(new EndMatchEvent(evt.WinnerClientId));
                     break;
             }
         }
@@ -563,10 +563,10 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             UnityEngine.Debug.Log("[9x9] All bots eliminated! Player wins!");
 
             // Find the player and trigger victory
-            var player = Object.FindFirstObjectByType<Player>();
+            var player = FindObjectOfType<Player>();
             if (player != null)
             {
-                Broadcast(new EndMatchEvent(player));
+                Broadcast(new EndMatchEvent(player.OwnerClientId));
             }
             else
             {
@@ -581,41 +581,21 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         void OnServerMatchEnded(EndMatchEvent evt)
         {
             UnityEngine.Debug.Log(
-                $"[9x9 Server] Match ended. Winner: {(evt.Winner != null ? evt.Winner.name : "None")}"
+                $"[9x9 Server] Match ended. Winner: {(evt.WinnerClientId.HasValue ? evt.WinnerClientId.Value : "None")}"
             );
             Model.MatchEnded = true;
 
             // Update persistent player stats (wins, kills, deaths, etc.)
-            if (evt.Winner != null)
+            if (evt.WinnerClientId.HasValue)
             {
                 // TODO: Increment wins, kills, playtime, etc. in PlayerProfile system
-                try
-                {
-                    var profileMgrType =
-                        System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.PlayerProfileManager");
-                    if (profileMgrType != null)
-                    {
-                        var updateMethod = profileMgrType.GetMethod(
-                            "UpdateStats",
-                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                        if (updateMethod != null)
-                        {
-                            updateMethod.Invoke(
-                                null,
-                                new object[] { true, evt.Winner.Kills, evt.Winner.Deaths });
-                        }
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    UnityEngine.Debug.LogWarning($"Failed to update player stats: {ex.Message}");
-                }
+                // Note: Need to look up Player object by clientId if needed
             }
 
             // Show victory/defeat screen to all clients
-            if (evt.Winner != null)
+            if (evt.WinnerClientId.HasValue)
             {
-                View.ShowVictory(evt.Winner);
+                View.ShowVictory(null);
             }
             else
             {

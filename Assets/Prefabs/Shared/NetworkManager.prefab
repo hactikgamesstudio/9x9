@@ -91,7 +91,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_GameAppPrefab: {fileID: 8151717977737709010, guid: 2e9b43889df38984ba4888499cf219bc, type: 3}
-  m_BotPrefab: {fileID: 0}
+  m_BotPrefab: {fileID: 1141450643439878686, guid: 4fa999579a409fa4b9798bf081e4a968, type: 3}
 --- !u!114 &6904216011547104763
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    
+    "com.unity.burst": "1.8.27",
     "com.unity.collab-proxy": "2.1.0",
     "com.unity.dedicated-server": "1.6.1",
     "com.unity.feature.characters-animation": "1.0.0",

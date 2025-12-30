@@ -43,7 +43,7 @@ namespace Unity.Template.Multiplayer.NGO.Core
         /// </summary>
         /// <param name="eventID">The name of the event to notify</param>
         /// <param name="data">The parameters to pass to the listening controllers</param>
-        internal void Broadcast(AppEvent evt)
+        protected void Broadcast(AppEvent evt)
         {
             App.Broadcast(evt);
         }

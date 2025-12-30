@@ -18,17 +18,17 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         [SerializeField] private float m_WalkSpeed = 5f;
 
 
-        
+
         [Tooltip("Sprint speed when holding Shift")]
         [SerializeField] private float m_SprintSpeed = 8f;
 
 
-        
+
         [Tooltip("Jump height in units")]
         [SerializeField] private float m_JumpHeight = 1.5f;
 
 
-        
+
         [Tooltip("Gravity force")]
         [SerializeField] private float m_Gravity = -9.81f;
 
@@ -39,12 +39,12 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         [SerializeField] private float m_MouseSensitivity = 2f;
 
 
-        
+
         [Tooltip("Maximum vertical look angle (prevents over-rotation)")]
         [SerializeField] private float m_MaxLookAngle = 80f;
 
 
-        
+
         [Tooltip("Camera transform for mouse look (auto-finds if null)")]
         [SerializeField] private Transform m_CameraTransform;
 
@@ -73,7 +73,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         private void Awake()
         {
             m_CharacterController = GetComponent<CharacterController>();
-            
+
             // Auto-find camera if not assigned
             if (m_CameraTransform == null)
             {
@@ -200,13 +200,13 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             // Handle player death: disable input, play animation, respawn logic, etc.
             enabled = false;
             UnityEngine.Debug.Log($"{name} died.");
-            
+
             // Broadcast death event via current game application (safer across assemblies)
             var app = CustomNetworkManager.Singleton?.CurrentGameApp;
             if (app != null)
             {
                 var player = GetComponent<Player>();
-                app.Broadcast(new PlayerDiedEvent(player));
+                app.Broadcast(new PlayerDiedEvent(player.OwnerClientId));
             }
         }
 

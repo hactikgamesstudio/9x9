@@ -6,7 +6,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     ///<summary>
     /// A collection of Coroutines Helpers
     ///</summary>
-    internal static class CoroutinesHelper
+    public static class CoroutinesHelper
     {
         /*
             usage: yield return CoroutinesHelper.OneSecond; 

@@ -9,9 +9,9 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     /// </summary>
     public class MetagameApplication : BaseApplication<MetagameModel, MetagameView, MetagameController>
     {
-        internal new static MetagameApplication Instance { get; private set; }
+        public new static MetagameApplication Instance { get; private set; }
 
-        internal event Action OnReturnToMetagameAfterMatch;
+        public event Action OnReturnToMetagameAfterMatch;
         internal bool IsDedicatedServer => NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient;
 
         protected override void Awake()

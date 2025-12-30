@@ -1,8 +1,6 @@
 using UnityEngine;
 using Unity.Template.Multiplayer.NGO.Core;
-using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu;
-using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Matchmaker;
-using Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.Loading;
+using Unity.Template.Multiplayer.NGO.Runtime.Metagame.Views;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {

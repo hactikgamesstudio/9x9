@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd4192ef5bde4354e80648a63770995c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unity.Template.Multiplayer.NGO.Runtime.MetagameView
-  m_MainMenuView: {fileID: 0}
+  m_MainMenuView: {fileID: 7181582686434638750}
   m_MatchmakerView: {fileID: 2675755657751875318}
   m_LoadingScreenView: {fileID: 7586983336449410248}
 --- !u!1 &2531175590338218285
@@ -266,18 +266,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5873813210152660583}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4216581305797874140
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4653335918413459185}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7181582686434638750
 MonoBehaviour:
   m_ObjectHideFlags: 0

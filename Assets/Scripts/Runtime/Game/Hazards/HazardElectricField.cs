@@ -11,7 +11,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         [SerializeField] private float m_PulseRadius = 5f;
         [SerializeField] private float m_PushForce = 4f;
         [SerializeField] private AnimationCurve m_PulseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        
+
         private float m_LastDamageTime = -999f;
         private float m_PulseTimer = 0f;
 
@@ -24,7 +24,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         void Update()
         {
             m_PulseTimer += Time.deltaTime;
-            
+
             // Pulse every damage interval
             if (m_PulseTimer >= m_Config.DamageInterval)
             {
@@ -37,7 +37,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         {
             // Find all objects in radius
             Collider[] colliders = Physics.OverlapSphere(transform.position, m_PulseRadius);
-            
+
             foreach (Collider col in colliders)
             {
                 if (col == null) continue;
@@ -55,7 +55,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         private void ApplyPush(Collider target)
         {
             Vector3 direction = (target.transform.position - transform.position).normalized;
-            
+
             // Try rigidbody
             var rb = target.GetComponent<Rigidbody>();
             if (rb != null)

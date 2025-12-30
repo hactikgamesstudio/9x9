@@ -1,8 +1,10 @@
 # Complete Setup Guide — 9x9 Unity Project
 
-**Last Updated:** November 14, 2025  
+**Last Updated:** December 25, 2025  
 **Unity Version:** 6000.2.10f1  
-**Project Type:** Multiplayer Survival Puzzle (URP + Netcode for GameObjects)
+**Burst Version:** 1.8.27 (no-shim, asmdef-native)  
+**Project Type:** Multiplayer Survival Puzzle (URP + Netcode for GameObjects)  
+**Status:** ✅ Clean compilation, all errors cleared
 
 ---
 
@@ -155,10 +157,34 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 
 ## Main Scene Assembly
 
+### ⚠️ IMPORTANT: Which Scene to Open First
+
+**The correct startup flow is:**
+
+1. **Always open `MetagameScene`** (the main menu)
+2. From menu, click "Single Player" or "Multiplayer" to load `MainGame`
+3. **DO NOT** open `MainGame` directly in Play Mode
+
+**Why?**
+- `MetagameScene` contains the main menu UI
+- It initializes networking, authentication, and game flow
+- `MainGame` is loaded dynamically once a game mode is selected
+
 ### Scene Structure Overview
 
 ```text
-MainGame (Scene)
+MetagameScene (START HERE)
+├── NetworkManager
+├── CustomNetworkManager
+├── Canvas (Main Menu)
+│   ├── MainMenuPanel
+│   │   ├── SinglePlayerButton
+│   │   ├── MultiplayerButton
+│   │   └── SettingsButton
+│   └── Other UI Panels
+└── EventSystem
+
+MainGame (LOADED BY MENU - Don't open directly)
 ├── Lighting
 │   └── Directional Light
 ├── Environment
@@ -173,10 +199,147 @@ MainGame (Scene)
     └── Canvas (HUD)
 ```
 
-### Step 1: Create New Scene
+### Step 0: Open the Correct Scene
+
+1. **In Project window**, navigate to `Assets/Scenes/`
+2. **Double-click `MetagameScene`** to open it
+3. Press **Play** — you should see the main menu
+
+**If you see only a skybox:**
+- Close Play Mode
+- Check that you have the `MetagameScene` open (look at the tab at the top)
+- If `MetagameScene` doesn't exist, see troubleshooting below
+
+### Scene Setup: MetagameScene Configuration
+
+#### Prerequisites
+
+Make sure you have:
+- `NetworkManager` prefab in `Assets/Prefabs/Shared/`
+- `CustomNetworkManager` script
+- Main menu UI canvas (created in Metagame application)
+
+#### Step 1: Create MetagameScene
 
 1. File → New Scene
-2. Save as `MainGame.unity` in `Assets/Scenes/`
+2. Save as `MetagameScene.unity` in `Assets/Scenes/`
+
+#### Step 2: Add NetworkManager
+
+1. Drag `Assets/Prefabs/Shared/NetworkManager.prefab` into the scene
+2. Select it and verify:
+   - **Custom Network Manager** component exists
+   - **Game App Prefab** field is set to `CubeGameApplication`
+
+#### Step 3: Add Main Menu Canvas
+
+The main menu is typically created by the **MetagameApplication**. If it's not appearing:
+
+1. Create Empty GameObject → Rename to `MetagameApplication`
+2. Add Component → Search for `MetagameApplication`
+3. Add Component → `MetagameModel`
+4. Add Component → `MetagameView`
+5. Add Component → `MetagameController`
+
+The MetagameView component should auto-create the menu canvas when enabled.
+
+#### Step 4: Save and Test
+
+1. Save scene
+2. **Press Play**
+3. You should see:
+   - Main menu with buttons
+   - "Single Player", "Multiplayer", "Settings" options
+
+**If still seeing only skybox:**
+- Check Console for errors (look for red text)
+- Verify Canvas exists in Hierarchy during Play Mode
+- Ensure MetagameView script has no errors
+
+### Scene Troubleshooting
+
+#### Problem: MetagameScene Doesn't Exist
+
+**Solution:**
+1. Create it manually (see Step 1 above)
+2. Add NetworkManager and MetagameApplication (Steps 2-3)
+3. Save and press Play
+
+#### Problem: Main Menu Not Visible
+
+**Symptoms:** Scene is dark/black, no UI visible
+
+**Causes:**
+- MetagameApplication not in scene
+- Canvas not created by MetagameView
+- UI camera missing
+
+**Solutions:**
+1. Verify `MetagameApplication` GameObject exists and is active
+2. Check Console for errors in MetagameView or MetagameController
+3. Add a Canvas manually if it's missing:
+   - Hierarchy → UI → Canvas
+   - Add text button "Single Player"
+   - Test that it's visible
+
+#### Problem: Main Menu Buttons Don't Work
+
+**Symptoms:** Click button, nothing happens
+
+**Causes:**
+- MainMenuController not wired to button
+- NetworkManager not initialized
+- Button event not linked
+- MainGame scene doesn't exist or isn't named correctly
+
+**Solutions:**
+1. Select "Single Player" button in Hierarchy
+2. Inspector → Button component → On Click
+3. Verify a handler is assigned (should be MainMenuPanel.OnSinglePlayerClicked)
+4. Check Console for errors
+5. **Important:** Ensure `MainGame` scene exists in `Assets/Scenes/` folder (exact name required)
+
+#### Problem: Single Player Button Shows Menu But Doesn't Load Game Scene
+
+**Symptoms:** 
+- Click "Single Player" → Shows Single Player menu ✓
+- Click "New Game" → Shows New Game panel ✓
+- Click "Start Game" → Menu hides but game doesn't appear, just skybox
+
+**Causes:**
+- MainGame scene doesn't exist
+- Scene file is named differently (case-sensitive)
+- MainGame scene is not added to Build Settings
+
+**Solutions:**
+1. Check that `MainGame` scene exists in `Assets/Scenes/MainGame.unity`
+2. Verify the filename is **exactly** `MainGame` (case-sensitive)
+3. Add scene to Build Settings:
+   - File → Build Settings
+   - Drag `MainGame.unity` into "Scenes In Build"
+4. If still not working, check Console for errors like "Scene 'MainGame' not found"
+
+### Scene Flow
+
+```
+1. User launches game
+   ↓
+2. Unity loads MetagameScene
+   ↓
+3. MetagameApplication initializes
+   ↓
+4. Main menu displays
+   ↓
+5. User clicks "Single Player"
+   ↓
+6. MainMenuController.OnStartSinglePlayerMode() called
+   ↓
+7. NetworkManager initializes (Host mode)
+   ↓
+8. MainGame scene loaded
+   ↓
+9. Game starts (player spawns, rooms generate)
+```
 
 ### Step 2: Add Lighting
 
@@ -520,70 +683,95 @@ Press Play and verify:
 
 ### How It Works
 
-The `InventorySystem` is a singleton that manages items and fires events when inventory changes.
+The `InventorySystem` is a **singleton** — a global manager that tracks all items the player carries. It fires events whenever inventory changes so the HUD, pickups, and other systems can react.
 
-### Setup (Already Done)
+### Setup Instructions (Do This Once Per Scene)
 
-The system GameObject should exist in your scene:
+#### Step 1: Create InventorySystem GameObject
 
-1. Hierarchy → InventorySystem
-2. Script: `InventorySystem.cs`
-3. No Inspector configuration needed
+1. **In your MainGame scene**, go to Hierarchy
+2. **Right-click** → Create Empty
+3. **Rename** to `InventorySystem`
+4. **Position:** Doesn't matter (it's not visible)
 
-### Using the Inventory
+#### Step 2: Attach the Script
 
-#### Adding Items (from code)
+1. **Select InventorySystem** in Hierarchy
+2. **Inspector** → Add Component → Search for `InventorySystem`
+3. **Click** to add the script
+
+That's it. The script automatically:
+- Creates a singleton instance (`InventorySystem.Instance`)
+- Persists across scene loads (`DontDestroyOnLoad`)
+- Manages item storage internally
+
+**No Inspector fields to configure** — the script handles everything.
+
+### Using the Inventory (From Other Scripts)
+
+Once the InventorySystem exists in your scene, any script can access it:
+
+#### Add Items (e.g., when pickup is collected)
 
 ```csharp
+// In PickupItem.cs or when player collects something
 InventorySystem.Instance.AddItem("health_potion", 1);
 ```
 
-#### Removing Items
+#### Remove Items (e.g., when player uses an item)
 
 ```csharp
 InventorySystem.Instance.RemoveItem("medkit", 1);
 ```
 
-#### Checking Items
+#### Check if Player Has Item (e.g., for door unlocking)
 
 ```csharp
-if (InventorySystem.Instance.HasItem("key"))
+if (InventorySystem.Instance.HasItem("key_red"))
 {
-    Debug.Log("Player has the key!");
+    Debug.Log("Player can unlock the red door!");
+    // Open door logic here
 }
 ```
 
-#### Subscribing to Events
+#### Subscribe to Inventory Changes (e.g., HUD update)
+
+This is how the HUD knows when to refresh:
 
 ```csharp
+// In HUDController.cs Start()
 void Start()
 {
+    // Subscribe to inventory changes
     InventorySystem.Instance.InventoryChanged += OnInventoryChanged;
 }
 
 void OnDestroy()
 {
+    // ALWAYS unsubscribe when script is destroyed!
     if (InventorySystem.Instance != null)
         InventorySystem.Instance.InventoryChanged -= OnInventoryChanged;
 }
 
 void OnInventoryChanged()
 {
-    Debug.Log("Inventory updated!");
-    // Update UI here
+    Debug.Log("Inventory updated! Refresh HUD.");
+    // Update hotbar, item counts, UI, etc.
 }
 ```
 
-### Item ID Conventions
+### Item ID Naming Convention
 
-Recommended naming:
+Use consistent lowercase IDs with underscores:
 
-- `health_potion`
-- `medkit`
-- `key_red`
-- `key_blue`
-- `ammo_pistol`
-- `weapon_sword`
+- `health_potion` (small heal)
+- `medkit` (large heal)
+- `key_red` (red key for doors)
+- `key_blue` (blue key)
+- `ammo_pistol` (bullet ammo)
+- `weapon_sword` (melee weapon)
+
+**Use the same ID everywhere** (in PickupItem prefabs, code, UI).
 
 ---
 

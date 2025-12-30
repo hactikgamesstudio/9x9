@@ -19,7 +19,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             RemoveListeners();
         }
 
-        internal override void RemoveListeners()
+        protected override void RemoveListeners()
         {
             RemoveListener<PlayerSignedIn>(OnPlayerSignedIn);
             RemoveListener<MatchEnteredEvent>(OnMatchEntered);

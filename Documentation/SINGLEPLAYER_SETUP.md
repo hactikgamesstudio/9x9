@@ -1,6 +1,14 @@
 # Singleplayer Setup Instructions
 
-## Progress Tracker
+**Last Updated**: December 25, 2025  
+**Status**: ✅ Compilation clean, architecture stable with Burst 1.8.27, interface pattern enabled
+
+## Important: Assembly Stability
+
+With the assembly refactor and no-shim setup (Burst 1.8.27):
+- **Keep bot code in the Game assembly** to avoid cycles.
+- **Use interfaces from Core** for cross-assembly calls (e.g., `IBotSpawner`).
+- **Avoid reflection**; prefer typed APIs.
 
 | Task | Status | Progress | Details |
 |------|--------|----------|---------|

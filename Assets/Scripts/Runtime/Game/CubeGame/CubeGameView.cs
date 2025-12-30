@@ -38,7 +38,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     var hudType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.UI.HUD.HUDController");
                     if (hudType != null)
                         m_HUD = (MonoBehaviour)Object.FindAnyObjectByType(hudType);
-                    
+
                     if (m_HUD == null)
                         CreateRuntimeHUD();
                 }
@@ -54,7 +54,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
                     var recapType = System.Type.GetType("Unity.Template.Multiplayer.NGO.Runtime.UI.HUD.MatchRecapView");
                     if (recapType != null)
                         m_MatchRecap = (MonoBehaviour)Object.FindAnyObjectByType(recapType);
-                    
+
                     if (m_MatchRecap == null)
                         CreateRuntimeMatchRecap();
                 }

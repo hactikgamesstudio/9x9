@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 0}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -391,15 +391,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af72cc48825064445bbb1fd10ee2afad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.unity.template.multiplayer-ngo.runtime::Unity.Template.Multiplayer.NGO.Runtime.CustomCursor
-  m_CursorTexture: {fileID: 0}
-  m_CursorHoverTexture: {fileID: 0}
-  m_CursorHotspot: {x: 0, y: 0}
-  m_UseHardwareCursor: 1
-  m_HighlightButtons: 1
-  m_HighlightColor: {r: 1, g: 1, b: 0.5, a: 1}
-  m_HighlightScale: 1.1
-  m_ShowLockNotification: 1
-  m_NotificationDuration: 2
 --- !u!4 &1215996600
 Transform:
   m_ObjectHideFlags: 0
@@ -431,7 +422,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7181582686434638750, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
   m_PrefabInstance: {fileID: 7232485461187084638}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 7232485461187084640}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb7a90aa8e63a234bbc2146f79845532, type: 3}
@@ -1086,12 +1077,20 @@ PrefabInstance:
       value: MetagameApplication
       objectReference: {fileID: 0}
     - target: {fileID: 1794868347322481598, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
+      propertyPath: m_AllowMSAA
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1794868347322481598, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
       propertyPath: m_AllowDynamicResolution
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4175558726825995447, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
       propertyPath: m_TagString
       value: MainCamera
+      objectReference: {fileID: 0}
+    - target: {fileID: 4653335918413459185, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6350193179812514416, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
       propertyPath: m_ComponentsRolesMasks.Array.size
@@ -1118,13 +1117,44 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2925154222283962181, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2102176083}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4653335918413459185, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7232485461187084641}
   m_SourcePrefab: {fileID: 100100000, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
 --- !u!4 &7232485461187084639 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2925154222283962181, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
   m_PrefabInstance: {fileID: 7232485461187084638}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7232485461187084640 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4653335918413459185, guid: a792aead6be06b44eaa0f1e2ff26af60, type: 3}
+  m_PrefabInstance: {fileID: 7232485461187084638}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7232485461187084641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7232485461187084640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 17248bf6192ffad43b8ab0d7fa77c2f9, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 4c4a65d85867be3439cd93bf1ef389eb, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!1001 &8638862055266633801
 PrefabInstance:
   m_ObjectHideFlags: 0

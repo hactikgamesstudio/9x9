@@ -33,6 +33,6 @@ namespace Unity.Template.Multiplayer.NGO.Core
             App.EventManager.RemoveListener(evt);
         }
 
-        internal abstract void RemoveListeners();
+        protected abstract void RemoveListeners();
     }
 }

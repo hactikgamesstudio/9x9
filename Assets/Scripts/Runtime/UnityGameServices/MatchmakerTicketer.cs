@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Unity.Template.Multiplayer.NGO.Runtime
 {
     // Minimal stub used by UnityServicesInitializer; can be expanded to use UGS Matchmaker
-    internal class MatchmakerTicketer : MonoBehaviour
+    public class MatchmakerTicketer : MonoBehaviour
     {
         private string m_LastQueueName = string.Empty;
 

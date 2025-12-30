@@ -22,7 +22,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
     [RequireComponent(typeof(NetworkManager))]
     public class CustomNetworkManager : MonoBehaviour
     {
-        internal static event Action OnConfigurationLoaded;
+        public static event Action OnConfigurationLoaded;
         const string k_DefaultServerListenAddress = "0.0.0.0";
         public static CustomNetworkManager Singleton { get; private set; }
         public static ConfigurationManager Configuration { get; private set; }
@@ -35,7 +35,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
 #if UNITY_EDITOR
         public static bool s_AreTestsRunning = false;
 #endif
-        internal bool AutoConnectOnStartup
+        public bool AutoConnectOnStartup
         {
             get
             {
@@ -47,11 +47,12 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
         }
 
-        internal bool IsClient => m_NetworkManager.IsClient;
-        internal bool IsServer => m_NetworkManager.IsServer;
-        internal bool IsHost => m_NetworkManager.IsHost;
+        // Expose network role flags cross-assembly so gameplay code can branch correctly
+        public bool IsClient => m_NetworkManager.IsClient;
+        public bool IsServer => m_NetworkManager.IsServer;
+        public bool IsHost => m_NetworkManager.IsHost;
 
-        internal Action ReturnToMetagame;
+        public Action ReturnToMetagame;
         internal int ExpectedPlayers { get; private set; } = 2;
         internal byte BotsSpawned { get; private set; } = 0;
         bool m_PreparedGame = true;
@@ -159,6 +160,10 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             // Offline singleplayer (no Netcode session started)
             if (startedByUser && !startedByMatchmaker)
             {
+                UnityEngine.Debug.Log("[9x9] Loading MainGame scene for singleplayer...");
+                // Load the game scene first, then instantiate the game application
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame", UnityEngine.SceneManagement.LoadSceneMode.Additive);
+                
                 InstantiateGameApplication();
                 // BotManager will be added by the game application if needed
                 UnityEngine.Debug.Log("[9x9] Offline singleplayer initialized (local game + bots).");
@@ -408,7 +413,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             return bot;
         }
 
-        internal void OnServerQuitAfter(float seconds)
+        public void OnServerQuitAfter(float seconds)
         {
             UnityEngine.Debug.Log($"[Server] quitting game in {seconds} seconds!");
             _ = StartCoroutine(CoroutinesHelper.WaitAndDo(new WaitForSeconds(seconds), OnServerQuit));
@@ -441,10 +446,7 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             if (IsClient)
             {
                 UnityEngine.Debug.Log($"Local client {ClientId} connected, waiting for other players...");
-                if (MetagameApplication.Instance)
-                {
-                    MetagameApplication.Instance.Broadcast(new MatchLoadingEvent());
-                }
+                // Note: MatchLoadingEvent broadcast removed - handled by MetagameController instead
             }
             else
             {
@@ -527,7 +529,18 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
             }
         }
 
-        internal BaseApplication CurrentGameApp => m_GameApp;
+        public BaseApplication CurrentGameApp => m_GameApp;
+
+        /// <summary>
+        /// Broadcasts a player win event to the current game application
+        /// </summary>
+        internal void BroadcastPlayerWin(ulong winnerClientId)
+        {
+            if (m_GameApp != null && IsServer)
+            {
+                m_GameApp.Broadcast(new EndMatchEvent(winnerClientId));
+            }
+        }
 
         internal void OnServerGameReadyToStart()
         {
@@ -542,17 +555,21 @@ namespace Unity.Template.Multiplayer.NGO.Runtime
         /// <summary>
         /// Performs cleanup operation after a game
         /// </summary>
-        internal void OnClientDoPostMatchCleanupAndReturnToMetagame()
+        public void OnClientDoPostMatchCleanupAndReturnToMetagame()
         {
             if (IsClient)
             {
                 m_NetworkManager.Shutdown();
             }
-            Destroy(GameApplication.Instance.gameObject);
+            if (m_GameApp != null)
+            {
+                Destroy(m_GameApp.gameObject);
+                m_GameApp = null;
+            }
             ReturnToMetagame?.Invoke();
         }
 
-        internal void OnEnteredMatchmaker()
+        public void OnEnteredMatchmaker()
         {
             s_AssignmentForCurrentGame = null;
         }

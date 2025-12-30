@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Template.Multiplayer.NGO.Runtime.UI.Shared;
 
 namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
 {
@@ -14,17 +15,18 @@ namespace Unity.Template.Multiplayer.NGO.Runtime.UI.Menus.MainMenu
 
     public void OnNewGameClicked()
     {
+        Debug.Log("[SinglePlayerMenuPanel] New Game clicked");
         menuManager.ShowNewGameMenu();
     }
 
     public void OnContinueClicked()
     {
-        Debug.Log("Continue game - not yet implemented");
+        Debug.Log("[SinglePlayerMenuPanel] Continue clicked - not yet implemented");
     }
 
     public void OnCoopClicked()
     {
-        Debug.Log("Co-op mode - not yet implemented");
+        Debug.Log("[SinglePlayerMenuPanel] Co-op clicked - not yet implemented");
     }
 }
 }

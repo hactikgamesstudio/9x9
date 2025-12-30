@@ -1,0 +1,24 @@
+{
+    "name": "Unity.Template.Multiplayer.NGO.Runtime.UnityGameServices",
+    "rootNamespace": "Unity.Template.Multiplayer.NGO.Runtime",
+    "references": [
+        "Unity.Template.Multiplayer.NGO.Runtime.Core",
+        "Unity.Template.Multiplayer.NGO.Runtime.Shared",
+        "Unity.Netcode.GameObjects",
+        "Unity.Netcode.Runtime",
+        "Unity.DedicatedServer.MultiplayerRoles",
+        "Unity.Services.Core",
+        "Unity.Services.Matchmaker",
+        "Unity.Services.Multiplayer",
+        "Unity.Template.Multiplayer.NGO.Runtime.Metagame"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
